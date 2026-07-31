@@ -107,8 +107,20 @@ Before opening (or un-drafting) a PR:
   `docs/findings.md` entry.
 - Anything read from the spec was read **at the pinned SHA**.
 
-`main` is PR-only with a required owner review and a merge queue; nothing lands
-without the owner.
+`main` is PR-only — no direct pushes, `check` required, squash only — but with
+**no merge queue and no required review**. With two contributors those were
+ceremony rather than safety, so a green PR lands the ordinary way:
+
+```sh
+gh pr merge --squash --delete-branch
+git up          # or: git remote update -p && git merge --ff-only @{u}
+```
+
+CODEOWNERS still requests the owner's review on every PR, which informs without
+blocking. This is worth revisiting the moment anyone outside the two
+contributors starts sending changes: the review requirement and the queue are
+the tools for that case, and both are one edit to
+`.github/rulesets/main.json` away.
 
 ## Findings go no further than this repo by default
 

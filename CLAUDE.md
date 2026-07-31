@@ -64,13 +64,20 @@ not.
 
 ## Landing changes
 
-- `main` is **PR-only** and branch-protected (required owner review + merge
-  queue). `scripts/merge.sh <pr>` lands an owner-authored PR via ruleset
-  bypass — run it **only on the owner's explicit ask for that PR**. Asking for a
-  task is not an ask to merge the PRs the task produces; the required review is
-  exactly the gate the bypass removes. This applies to any sub-agent you brief.
-- `merge.sh` gates on green CI, so no `--force` is needed; **`--force` stays
-  owner-run.**
+- `main` is **PR-only**: no direct pushes, `check` required, squash only. But
+  **no merge queue and no required review** — with two contributors those were
+  ceremony. So land a PR the ordinary way, `gh pr merge --squash
+  --delete-branch`, once CI is green, then `git up`.
+- **This is deliberately unlike `pacioli` and `okf-tools`**, the closest
+  siblings, where a required owner review means an owner-authored PR needs
+  `scripts/merge.sh` and an explicit per-PR ask. That script does **not** exist
+  here and should not be reintroduced: it is a ruleset-bypass tool, and there is
+  no longer a gate for it to bypass. Don't carry those repos' merge discipline
+  over by pattern-matching.
+- CODEOWNERS still auto-requests the owner's review on every PR. It informs;
+  it no longer blocks.
+- Revisit if anyone outside the two contributors starts sending changes — that
+  is what the review requirement and the queue were for.
 - Repo-level and org-level GitHub settings changes are **seat-only** — spawn a
   `~/github-settings`-seated sub-agent rather than running `gh` here.
 

@@ -4,8 +4,10 @@ on:
   push:
     branches: [main]
   pull_request:
-  # The checks must also run on the merge queue's temporary branches, or a
-  # queued PR waits forever for a status that never reports.
+  # There is no merge queue today (see CONTRIBUTING, "Contributing a change"),
+  # so this trigger fires on nothing. It is kept because it is what makes
+  # turning the queue back on safe: without it, a queued PR waits forever for a
+  # status that never reports on the queue's temporary branches.
   merge_group:
 
 # Newer pushes to the same branch supersede in-flight runs.
