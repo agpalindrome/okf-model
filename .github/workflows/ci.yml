@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The checks must also run on the merge queue's temporary branches, or a
+  # queued PR waits forever for a status that never reports.
+  merge_group:
+
+# Newer pushes to the same branch supersede in-flight runs.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # One job, two gates, because they cannot be one command here. `nix flake
+  # check` covers hygiene (nixfmt, deadnix, statix, markdownlint, check-yaml,
+  # whitespace/EOF) — exactly the local pre-commit set. It cannot cover Lean:
+  # `elan` and `lake` fetch the pinned toolchain and Batteries over the network,
+  # which a Nix build sandbox forbids. So the Lean gate runs as a second step,
+  # inside the dev shell but outside the sandbox, where Actions has network.
+  #
+  # The job is named `check` and not `nix flake check` (as the sibling repos are)
+  # precisely because it is more than that, and the ruleset requires this job by
+  # its DISPLAY NAME — renaming it silently breaks the requirement.
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v30
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+      - name: hygiene
+        run: nix flake check -L
+      - name: lean
+        run: nix develop --command ./scripts/lean-check.sh

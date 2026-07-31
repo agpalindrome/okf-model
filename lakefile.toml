@@ -1,0 +1,30 @@
+name = "okf-model"
+defaultTargets = ["Okf"]
+
+# Project-wide Lean options, mirroring Pacioli's (which in turn mirror
+# Mathlib's) so both formalizations are held to the same hygiene:
+#   - `autoImplicit`/`relaxedAutoImplicit = false` forbid Lean from silently
+#     auto-binding an unbound identifier as an implicit argument — a common
+#     source of subtly-wrong signatures. Every variable is declared on purpose.
+#     This matters more here than usual: a model of a *specification* whose
+#     signatures drift silently is a model of something other than the spec.
+#   - `pp.unicode.fun` pretty-prints `fun x => e` with the `↦` arrow.
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+pp.unicode.fun = true
+
+# Batteries, and deliberately NOT Mathlib. The v0.2 structural fragment is
+# strings, lists, paths and finite maps; it needs almost nothing Mathlib
+# provides, and skipping it keeps CI to minutes and frees the toolchain from
+# having to match a Mathlib release tag exactly. Adding Mathlib later is a
+# two-line change here; removing it would not be.
+#
+# Pinned to the tag whose `lean-toolchain` matches ours (v4.32.0).
+[[require]]
+name = "batteries"
+git = "https://github.com/leanprover-community/batteries.git"
+rev = "v4.32.0"
+
+[[lean_lib]]
+name = "Okf"

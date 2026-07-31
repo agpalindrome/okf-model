@@ -1,0 +1,13 @@
+{
+  "description": "Descriptive Lean 4 formalization of the Open Knowledge Format (OKF) standard — one model per OKF revision, upstream of okf-tools.",
+  "homepage": "",
+  "topics": [
+    "formal-methods",
+    "formalization",
+    "lean4",
+    "nix",
+    "okf",
+    "specification",
+    "theorem-proving"
+  ]
+}
