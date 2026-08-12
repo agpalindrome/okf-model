@@ -41,6 +41,25 @@ direnv allow
 The dev shell provides `elan`, which provides the `lake`/`lean` shims that read
 `lean-toolchain`.
 
+### The git hooks, and why `prek` runs them
+
+Entering the shell installs the hooks; `prek` is the driver. That is a choice
+about failure mode, not about speed. The installed hook is generated and
+untracked, so it cannot be repaired by editing it, and `pre-commit`'s template
+writes an absolute `/nix/store` path as its shebang with no fallback. Let a
+garbage collection take that path and `git commit` fails with `cannot exec
+'.git/hooks/pre-commit': No such file or directory`, naming a file that is
+present and executable — what went missing is the interpreter on its first line,
+which the message never mentions. The tempting move at that point is
+`--no-verify`, which drops every check silently. `prek`'s template takes
+`#!/bin/sh` and guards its pinned path with a test that falls back to `PATH`,
+which the dev shell already populates: lose the store path there and the hooks
+still run, lose it outside the shell and the error at least names `prek`.
+
+A clone that predates this keeps the old hook as `.git/hooks/*.legacy`, which
+`prek` would otherwise go on running. Entering the shell deletes it; `flake.nix`
+explains why leaving it in place does not converge.
+
 ## Dependency management — Lake's, not Nix's
 
 Worth stating plainly, because the sibling repos differ and the wrong assumption
