@@ -87,9 +87,10 @@ lists, paths and finite maps. The rationale is recorded in `lakefile.toml`.
 
 CI is one job, **`check`**, with two steps:
 
-1. `nix flake check -L` — nixfmt, deadnix, statix, markdownlint (80 columns),
-   check-yaml, whitespace/EOF. Exactly the local pre-commit set, so CI and the
-   dev shell agree.
+1. `nix flake check -L` — two checks. `pre-commit` runs nixfmt, deadnix, statix,
+   markdownlint (80 columns), check-yaml, whitespace/EOF: exactly the local
+   pre-commit set, so CI and the dev shell agree. `hook-fallback` runs
+   `scripts/check-hook-fallback.sh`, described below.
 2. `nix develop --command ./scripts/lean-check.sh` — `lake build` plus the
    `sorry` check, outside the Nix sandbox where the network is available.
 
@@ -103,6 +104,28 @@ display name — renaming the job silently breaks the requirement.**
 
 There is no `.lean` autoformatter: Lean has no mature rustfmt-equivalent, so
 layout is convention-guided. TOML is formatted by `taplo`.
+
+### `hook-fallback`, and why a check guards a file nobody here wrote
+
+The git hooks are driven by `prek` for one property: the hook it generates
+guards the `/nix/store` path it pins and falls back to `PATH`, so a store
+garbage-collection cannot leave `git commit` failing as `No such file or
+directory` about a file that is plainly there.
+
+That property lives in prek's template — upstream, and generated into an
+untracked `.git/hooks/pre-commit`. Nothing here tracks it, so a release that
+dropped the guard would leave this repo green and silently back to the old
+failure, with the fix apparently still in place.
+
+`scripts/check-hook-fallback.sh` installs the hook prek actually writes into a
+scratch repo, rewrites its pinned path to one that cannot resolve, and runs it —
+once with a driver on `PATH`, which must succeed, and once with none, which must
+fail *and name prek*. It asserts nothing about the template's wording, so a
+reworded guard passes and a dropped one does not. If the `PREK=` line stops
+matching, the check fails rather than passing blind.
+
+It is slower than the other checks, because it installs and runs a real hook.
+That is the cost of testing the property instead of trusting it.
 
 ## House style
 
