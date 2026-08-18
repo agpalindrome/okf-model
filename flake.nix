@@ -50,6 +50,9 @@
           #
           # Upstream recommends the switch (git-hooks.nix README), the option is
           # first-class, and `usingPrek` gates only the unused `priority` field.
+          #
+          # That guard is upstream's and untracked here, so `hook-fallback`
+          # below is what notices if a prek release drops it.
           package = nixpkgs.legacyPackages.${system}.prek;
           hooks = {
             # `nixfmt` (not `nixfmt-rfc-style`): as of nixpkgs 25.11 the RFC 166
@@ -80,10 +83,35 @@
             };
           };
         };
+
+      # What `prek` bought above is one property of a file this repo neither
+      # tracks nor owns: the generated hook guards its pinned store path and
+      # falls back to `PATH`. A prek release that dropped the guard would leave
+      # this repo green and silently back to the failure #3 reports, which is
+      # why the property is checked rather than assumed. The check installs the
+      # real hook and takes its pinned path away; `scripts/check-hook-fallback.sh`
+      # carries the reasoning and the failure messages.
+      hookFallbackFor =
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        pkgs.runCommandLocal "hook-fallback"
+          {
+            nativeBuildInputs = [
+              pkgs.git
+              pkgs.prek
+            ];
+          }
+          ''
+            ${pkgs.bash}/bin/bash ${./scripts/check-hook-fallback.sh}
+            touch $out
+          '';
     in
     {
       checks = forAllSystems (system: {
         pre-commit = hooksFor system;
+        hook-fallback = hookFallbackFor system;
       });
 
       devShells = forAllSystems (
