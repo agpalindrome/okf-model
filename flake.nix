@@ -27,6 +27,78 @@
       # without type-checking anything. CI runs `scripts/lean-check.sh` as a
       # second step of the same job instead (`.github/workflows/ci.yml`), where
       # the network is available. See CONTRIBUTING, "What the checks enforce".
+      # vale, pinned to the exact version the owner's machine and the source
+      # repo's CI both run, from the upstream release rather than from nixpkgs.
+      #
+      # Taking `pkgs.vale` would be less code and the wrong version: this lock
+      # carries 3.15.2, while the vendored rules were measured at 3.17.x and the
+      # source repo pins 3.17.1. A prose linter that disagrees with the one the
+      # rules were written against is worse than none, because the disagreement
+      # shows up as a finding rather than as an error.
+      valeVersion = "3.17.1";
+      valeAssets = {
+        x86_64-linux = {
+          name = "Linux_64-bit";
+          hash = "sha256-25R/ifIpLmoDgaYd4VX2pfXLTLRgyheOpBLvYFVZzv0=";
+        };
+        aarch64-linux = {
+          name = "Linux_arm64";
+          hash = "sha256-ktkev57mnsB3N5vpXNCeZxCrM9PVurZrtILmbryA3CM=";
+        };
+        x86_64-darwin = {
+          name = "macOS_64-bit";
+          hash = "sha256-s3q5md/RQU0EG9LpTO0QMpLWNNp2+VTDhb94ncf1+Tk=";
+        };
+        aarch64-darwin = {
+          name = "macOS_arm64";
+          hash = "sha256-gMrPhe8j9Tz913NV7EGm75muwTbxXfs1F3I0gvNVk/k=";
+        };
+      };
+
+      valeFor =
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          asset = valeAssets.${system};
+        in
+        pkgs.stdenvNoCC.mkDerivation {
+          pname = "vale";
+          version = valeVersion;
+          src = pkgs.fetchurl {
+            url = "https://github.com/errata-ai/vale/releases/download/v${valeVersion}/vale_${valeVersion}_${asset.name}.tar.gz";
+            inherit (asset) hash;
+          };
+          # The tarball is flat: LICENSE, README.md, vale.
+          sourceRoot = ".";
+          # The Linux builds are dynamically linked against glibc and libstdc++
+          # (read from the release binary's DT_NEEDED, 2026-08-19); the macOS
+          # ones need nothing.
+          nativeBuildInputs = pkgs.lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.autoPatchelfHook;
+          buildInputs = pkgs.lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.stdenv.cc.cc.lib;
+          dontStrip = true;
+          installPhase = ''
+            runHook preInstall
+            install -Dm755 vale $out/bin/vale
+            runHook postInstall
+          '';
+        };
+
+      # The gate's logic lives in the tracked script, so a hand run and the hook
+      # are the same code; this wrapper only supplies the tools.
+      proseCheckFor =
+        system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+        in
+        pkgs.writeShellApplication {
+          name = "prose-check";
+          runtimeInputs = [
+            (valeFor system)
+            pkgs.findutils
+          ];
+          text = "exec ${pkgs.bash}/bin/bash ${./scripts/prose-check.sh}";
+        };
+
       hooksFor =
         system:
         git-hooks.lib.${system}.run {
@@ -65,6 +137,22 @@
             trim-trailing-whitespace.enable = true;
             end-of-file-fixer.enable = true;
             check-yaml.enable = true;
+            # Prose style, from rules vendored out of the owner's ~/.claude.
+            #
+            # `always_run` with no filenames, rather than the usual `files`
+            # regex, because the hook must fail when it finds nothing to lint:
+            # pre-commit skips a hook whose file list is empty, so a discovery
+            # that silently broke would read as a clean gate. The script
+            # discovers its own inputs and stops on an empty list —
+            # `scripts/prose-check.sh` carries the reasoning.
+            prose = {
+              enable = true;
+              name = "prose";
+              description = "vale, over authored markdown";
+              entry = "${proseCheckFor system}/bin/prose-check";
+              pass_filenames = false;
+              always_run = true;
+            };
             markdownlint = {
               enable = true;
               settings.configuration = {
@@ -158,6 +246,9 @@
               pkgs.elan
               # `taplo` formats `lakefile.toml`.
               pkgs.taplo
+              # The same pinned vale the `prose` hook runs, so
+              # `./scripts/prose-check.sh` works by hand.
+              (valeFor system)
             ];
           };
         }

@@ -11,8 +11,8 @@ file only adds what an agent needs on top of it.
 
 **The model describes; it does not decide.** Where the spec is contradictory or
 silent, represent the gap — add a field to `Policy` and prove the readings
-separate — rather than picking the reading that seems obviously right. Picking is
-driving OKF, which is the one thing this repo exists not to do.
+separate — rather than picking the reading that seems right. Picking is driving
+OKF, which is the one thing this repo exists not to do.
 
 The pressure to resolve is strongest exactly where the gap is most annoying, so
 the failure mode looks like helpfulness. If you find yourself writing "the spec
@@ -46,6 +46,11 @@ deliberate work with its own checklist in that file.
   `--apply` writes them. Owner-run, never wired into CI.
 - **Docs lint at 80 columns**, and emphasis style must be consistent within each
   file (MD049 infers it from the first use — this file is asterisk).
+- **Prose lints against vale** — `./scripts/prose-check.sh`, also wired as the
+  `prose` pre-commit hook and so covered by `nix flake check`. Errors block,
+  warnings do not. The rules in `.vale.ini` and `.vale/styles` are **vendored**
+  from `~/.claude/vale`: fix a rule there and re-sync, never here. CONTRIBUTING,
+  "`prose`, and the rules it enforces", carries the rest.
 
 ## Comments and prose
 
@@ -93,7 +98,11 @@ not.
   follows the checklist in that file, and closes findings rather than deleting
   them.
 - Treat the **pinned** files as sensitive — `lean-toolchain`,
-  `lake-manifest.json`, `flake.lock`. Don't change them casually.
+  `lake-manifest.json`, `flake.lock`, and vale's version in `flake.nix`. Don't
+  change them casually.
+- Do **not** hand-edit `.vale.ini` or `.vale/styles/**`. They are vendored;
+  `~/.claude/scripts/sync-vale.sh --check .` reports the drift an edit creates,
+  and the fix belongs upstream in `~/.claude`.
 - Do **not** add a checker, a bundle loader for real user input, a normative /
   colouring layer, or Mathlib, without going through the owner. The first three
   belong to `okf-tools`; the fourth was a deliberate choice recorded in

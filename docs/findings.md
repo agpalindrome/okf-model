@@ -2,8 +2,8 @@
 
 Gaps in the [OKF spec][spec] surfaced by **formalizing** it: contradictions
 between the normative prose and the worked examples, constraints stated without
-marking their normative force, and places the text is simply silent. Each entry
-is dated, pinned to a SPEC.md SHA, and — where one exists — linked to the Lean
+marking their normative force, and places the text is silent. Each entry is
+dated, pinned to a SPEC.md SHA, and — where one exists — linked to the Lean
 theorem that witnesses it.
 
 **No entries yet.** The format is established here before the first modelling
