@@ -88,9 +88,9 @@ lists, paths and finite maps. The rationale is recorded in `lakefile.toml`.
 CI is one job, **`check`**, with two steps:
 
 1. `nix flake check -L` — two checks. `pre-commit` runs nixfmt, deadnix, statix,
-   markdownlint (80 columns), check-yaml, whitespace/EOF: exactly the local
-   pre-commit set, so CI and the dev shell agree. `hook-fallback` runs
-   `scripts/check-hook-fallback.sh`, described below.
+   markdownlint (80 columns), check-yaml, whitespace/EOF, and `prose` (vale):
+   exactly the local pre-commit set, so CI and the dev shell agree.
+   `hook-fallback` runs `scripts/check-hook-fallback.sh`, described below.
 2. `nix develop --command ./scripts/lean-check.sh` — `lake build` plus the
    `sorry` check, outside the Nix sandbox where the network is available.
 
@@ -104,6 +104,33 @@ display name — renaming the job silently breaks the requirement.**
 
 There is no `.lean` autoformatter: Lean has no mature rustfmt-equivalent, so
 layout is convention-guided. TOML is formatted by `taplo`.
+
+### `prose`, and the rules it enforces
+
+`scripts/prose-check.sh` runs vale over every markdown file in the tree, against
+the house-style rules vendored into `.vale.ini` and `.vale/styles`. Those rules
+are the word-level half of the owner's `prose.md`, kept in sync by
+`~/.claude/scripts/sync-vale.sh` — `sync-vale.sh --check .` reports drift, and
+editing the vendored copy here is how that drift starts.
+
+Three properties are deliberate, and each was checked rather than assumed
+(2026-08-19, vale 3.17.1):
+
+- **Errors block; warnings do not.** vale's exit code is errors-only whatever
+  `MinAlertLevel` prints, so this needs no flag. A gate that fires on every
+  commit gets switched off.
+- **`--no-global`.** Without it vale merges a machine-global styles directory on
+  top of the vendored one, which is how a local run comes to disagree with CI
+  while both look correctly configured.
+- **An empty file list fails.** `vale` with no path argument lints stdin, finds
+  nothing, and exits 0 — a green check over no prose at all. The hook therefore
+  runs with `always_run` and no filenames, because pre-commit skips a hook whose
+  file list is empty, and the script stops on an empty discovery.
+
+vale is pinned to 3.17.1 from the upstream release rather than taken from
+nixpkgs, which carries 3.15.2 under this lock. The vendored rules were measured
+against 3.17.x; a linter disagreeing with the one its rules were written for
+reports the disagreement as a finding about the prose.
 
 ### `hook-fallback`, and why a check guards a file nobody here wrote
 
@@ -130,7 +157,8 @@ That is the cost of testing the property instead of trusting it.
 ## House style
 
 - Prose and comments wrap at **80 columns**; emphasis style is consistent within
-  each file.
+  each file. Word-level style is enforced by the `prose` check above; run
+  `./scripts/prose-check.sh` from the repo root.
 - A theorem that witnesses a spec gap names the section in its docstring, and the
   `docs/findings.md` entry names the theorem.
 - Quote the spec where the exact words are load-bearing, and cite the section.
@@ -145,6 +173,7 @@ Before opening (or un-drafting) a PR:
 
 - `./scripts/lean-check.sh` is green, and no `sorry` remains in anything
   load-bearing.
+- `./scripts/prose-check.sh` is green (the pre-commit hook runs it too).
 - New `Policy` fields, if any, have both a separation theorem and a
   `docs/findings.md` entry.
 - Anything read from the spec was read **at the pinned SHA**.

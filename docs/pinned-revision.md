@@ -45,7 +45,7 @@ edit in place.
 
 Re-pinning is deliberate work, not maintenance. It obliges, at minimum:
 
-1. A diff of the two SPEC.md blobs, summarised in the commit message.
+1. A diff of the two SPEC.md blobs, summarized in the commit message.
 2. A decision — recorded, not assumed — on whether the new text goes in a **new
    revision namespace** (`Okf.V0_3`) or updates the existing one. A new declared
    version means a new namespace. A silent edit under an unchanged version string
