@@ -84,12 +84,18 @@ is what executes on fixtures without elaborator blowup on large structures.
 This is the same discipline `okf-tools` states about fidelity: say what the gate
 actually is, rather than implying more.
 
-## Scope of the first pass (v0.2)
+## How the modelling proceeds
 
-The structural fragment `okf-graph` already commits to, as a single conformance
-predicate over a typed model: §2 identity · §3 / §3.1 bundle + reserved files ·
-§4 / §4.1 concept + frontmatter · §5.1 provenance edges · §6 links / paths · §10
-attested-computation contract · §11 conformance · §12 versioning.
+**Down the document, section by section, revising as we go.** A pass reads one
+section of the pinned `SPEC.md`, models what that section's own text supports,
+and stops there. Nothing commits in advance to a list of sections, or to an
+order other than the spec's own.
+
+Revision is the expected case rather than the exception. §2 defines `Actor` and
+`Receipt` in a line each and leaves their content to §7 and §10, so a model of
+§2 written before those sections is *meant* to be reopened once they are read.
+A definition here is provisional until every section constraining it has been
+read.
 
 Read against the pinned revision in [`pinned-revision.md`](pinned-revision.md) —
 note that §3.2 / §11 have an in-flight upstream PR.
@@ -117,29 +123,10 @@ Purpose 2 is currently **unproven**: the three issues raised upstream on
 as a dated local record rather than to build around an assumption that filing is
 imminent — not a reason to change scope.
 
-## Roadmap
-
-1. ~~Toolchain skeleton, green and empty.~~
-2. This document, and the revision pin.
-3. `Basic` + `Concept` — §2, §4, §6, §7 types. First separation theorem here:
-   the §7 / §5.1 actor case, witnessed by `team:ga4-docs`.
-4. `Bundle` + `Attested` — §3, §10, §11, against the pinned text.
-5. `Policy` + `Conformance` — the gap record, `okfGraphPolicy`, the `Bool`/`Prop`
-   pair and `conformant_iff`.
-6. `Gaps` — the remaining separation theorems; each becomes a `findings.md`
-   entry.
-7. `Fixtures` — the clean bundle plus one per violation class, each with a
-   theorem naming the clause it violates. Certified as values; not yet emitted.
-8. The bridge to `okf-tools` — a separate decision, taken *after* step 7 has
-   shown what the fixtures look like. Deliberately not designed now.
-
-Steps 3–7 are done in small, reviewed increments, reading the spec text together
-rather than in one pass.
-
 ## Non-goals
 
 - No checker. This repo does not compete with `okf-graph`, does not read a real
-  bundle off disk in the first pass, and never validates for a user.
+  bundle off disk, and never validates for a user.
 - No normative layer, no colouring, no seam.
 - No resolution of a spec gap, however obvious the fix looks. Adopting a
   resolution is driving OKF.
@@ -148,7 +135,8 @@ rather than in one pass.
 
 ## Open, deliberately
 
-- The fixture bridge's direction and format (roadmap step 8).
+- The fixture bridge to `okf-tools` — its direction, its format, and whether it
+  is built at all.
 - Whether a round-trip theorem is worth its cost.
 - Whether inter-revision theorems (§13 "changes from") are worth stating — the
   layout keeps them possible; nothing commits to writing them.

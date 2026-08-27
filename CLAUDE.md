@@ -2,8 +2,8 @@
 
 A **descriptive** Lean 4 formalization of the [OKF][spec] standard, one model
 per OKF revision. Read [`docs/scope-and-stance.md`](docs/scope-and-stance.md)
-first — it carries the stance, the trust boundary, and the roadmap, and this
-file only adds what an agent needs on top of it.
+first — it carries the stance, the trust boundary, and how the modelling
+proceeds, and this file only adds what an agent needs on top of it.
 
 [spec]: https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
 
