@@ -16,3 +16,6 @@
 # Machine-local Claude Code settings (per-session permission grants, etc.).
 # The shared agent guide is the tracked CLAUDE.md at the repo root.
 /.claude/
+
+# Otto's working notes for the session — scratch, deliberately untracked.
+/otto-notes.md
