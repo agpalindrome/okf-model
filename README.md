@@ -38,9 +38,11 @@ anything here. In short:
 
 ## Status
 
-**Skeleton.** The toolchain is wired and green; no model exists yet. The first
-pass covers the v0.2 structural fragment, built in small reviewed increments —
-see the roadmap in `docs/scope-and-stance.md`.
+**Skeleton.** The toolchain is wired and green; no model exists yet.
+
+Modelling proceeds down the spec, section by section, revising earlier sections
+as later ones constrain them. See
+[`docs/scope-and-stance.md`](docs/scope-and-stance.md).
 
 The spec revision under study is pinned by **commit SHA**, not by the string
 "v0.2": upstream has no tags or releases and edits the text in place. See

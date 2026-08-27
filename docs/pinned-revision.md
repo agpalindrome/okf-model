@@ -34,8 +34,8 @@ bundle root and a conformance corpus of "regular `.md` file entries recursively
 beneath that root, excluding symbolic-link entries", and rewrites §11's list in
 those terms.
 
-This matters to the first modelling pass, which covers §3 and §11 directly. The
-model reads the **pinned text**, not the PR. If #232 lands, the ambiguity it
+This matters whenever §3 and §11 are modelled. The model reads the **pinned
+text**, not the PR. If #232 lands, the ambiguity it
 resolves stops being a gap — and re-pinning is how that enters this repo, not an
 edit in place.
 
