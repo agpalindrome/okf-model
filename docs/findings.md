@@ -27,7 +27,7 @@ drift:
 The four entries already in the friction log stay where they are. One that later
 acquires a Lean witness gains a **cross-link** from here, not a copy.
 
-[friction]: https://github.com/ojhermann-org/okf-tools/blob/main/docs/okf-friction.md
+[friction]: https://github.com/agpalindrome/okf-tools/blob/main/docs/okf-friction.md
 
 ## Entry format
 
