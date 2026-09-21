@@ -5,7 +5,7 @@ per OKF revision. Read [`docs/scope-and-stance.md`](docs/scope-and-stance.md)
 first — it carries the stance, the trust boundary, and how the modelling
 proceeds, and this file only adds what an agent needs on top of it.
 
-[spec]: https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
+[spec]: https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md
 
 ## The one rule this repo turns on
 
@@ -23,7 +23,7 @@ must decide something to run; the model must not.
 
 ## Read against the pin, never against `main`
 
-Every module and every finding is read against the exact `okf/SPEC.md` commit in
+Every module and every finding is read against the exact `SPEC.md` commit in
 [`docs/pinned-revision.md`](docs/pinned-revision.md) — **not** the upstream
 default branch, which is edited in place under an unchanged version string. If
 you fetch the spec to check a clause, fetch it at the pinned SHA. Re-pinning is
