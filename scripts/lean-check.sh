@@ -26,10 +26,18 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 echo "==> lake build"
+# Keep lake's own exit status: a missing `lake` prints "command not found",
+# which the "error:" grep below does not match.
+if build_log="$(lake build 2>&1)"; then build_status=0; else build_status=$?; fi
 # Filter the benign macOS linker version warnings (libuv built against a newer
 # SDK than the target floor) so real diagnostics stand out.
-build_log="$(lake build 2>&1 | grep -v 'ld64.lld: warning' || true)"
+build_log="$(printf '%s\n' "$build_log" | grep -v 'ld64.lld: warning' || true)"
 echo "$build_log"
+
+if [ "$build_status" -ne 0 ]; then
+  echo "FAIL: lake build exited $build_status." >&2
+  exit 1
+fi
 
 if printf '%s\n' "$build_log" | grep -q "error:"; then
   echo "FAIL: lake build reported errors." >&2
