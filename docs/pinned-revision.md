@@ -35,10 +35,13 @@ upstream on 2026-08-20 and 2026-08-21 (`knowledge-catalog` `62432a0`,
 rather than `today`. The version string did not change, which the
 [findings log][silent] records.
 
-The namespace decision this required: **updated in place.** No revision
-namespace existed when the pin moved — `Okf.lean` imports no model module — so
-there was no `Okf.V0_2` to keep or fork. The first model module is written
-against this pin.
+The namespace decision this required, made by the owner on 2026-09-21:
+**re-pin in place.** `Okf.V0_2` binds to this pin rather than to a new
+namespace. `main` had no model module when the pin moved, but the unmerged
+`feat/okf-v0-2` branch (`662cbe9`, `2559764`) adds `Okf.V0_2` and models §2
+against the earlier pin. §2 is byte-identical in the two texts, so the content
+of `Okf/V0_2/Basic.lean` holds under this pin. Only its docstrings, which cite
+`knowledge-catalog`'s `okf/SPEC.md`, need repointing when that branch lands.
 
 [pr324]: https://github.com/GoogleCloudPlatform/knowledge-catalog/pull/324
 [silent]: findings.md#2026-09-21--v02-changed-its-timestamp-type-without-a-version-change
