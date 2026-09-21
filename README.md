@@ -7,7 +7,7 @@ It sits **upstream of the tooling** — `okf > okf-graph > okf-normative >
 applications` — as the object the [`okf-tools`][tools] crates are read against,
 rather than as a member of that workspace.
 
-[spec]: https://github.com/GoogleCloudPlatform/knowledge-catalog/blob/main/okf/SPEC.md
+[spec]: https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md
 [tools]: https://github.com/ojhermann-org/okf-tools
 
 ## Descriptive, not prescriptive

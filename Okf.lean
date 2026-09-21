@@ -14,7 +14,7 @@ This root module imports the revision modules in dependency order. It is empty
 of revisions today, on purpose: the toolchain skeleton lands green and empty so
 that a later red build has exactly one possible cause.
 
-The first revision namespace will be `Okf.V0_2`, pinned to the `okf/SPEC.md`
+The first revision namespace will be `Okf.V0_2`, pinned to the `SPEC.md`
 commit recorded in `docs/pinned-revision.md` — not to the string "v0.2", which
 upstream edits in place and does not tag.
 
