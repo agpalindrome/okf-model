@@ -3,7 +3,7 @@
 What this repo is for, what it certifies, and what it deliberately does not do.
 Written 2026-07-31, before any Lean was written, from [okf-tools#69][i69].
 
-[i69]: https://github.com/ojhermann-org/okf-tools/issues/69
+[i69]: https://github.com/agpalindrome/okf-tools/issues/69
 
 ## Position in the stack
 
@@ -105,7 +105,7 @@ note that §3.2 / §11 have an in-flight upstream PR.
 repo exists to keep straight); undecided items such as §5.3 trust-tier ownership
 ([okf-tools#62][i62]); and anything requiring domain knowledge.
 
-[i62]: https://github.com/ojhermann-org/okf-tools/issues/62
+[i62]: https://github.com/agpalindrome/okf-tools/issues/62
 
 ## Two purposes, unequally weighted
 
