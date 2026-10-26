@@ -1,11 +1,11 @@
 import Okf.V0_2.Basic
 
 /-!
-# §3 Bundle structure — the first clause
+# §3 Bundle structure — kind by path
 
 §3 states two RFC 2119 keywords. The MAY, on distribution, is not modelled. The
-MUST NOT, §3.1's reserved filenames, is the first conformance clause in the
-model and the whole of this module's Lean.
+MUST NOT, §3.1's reserved filenames, is carried by the filters this module
+defines, and not by a clause. Revised at §8; the history is below.
 
 ## The map survives §3
 
@@ -14,6 +14,24 @@ and still constrains no directory as a thing: nothing about an empty one,
 nothing one must or may contain. Only files carry rules, so the §2 argument for
 a map keyed on `Path` stands unchanged. "At any level of the hierarchy" is why
 `Path.isReserved` looks at the last segment and ignores the depth.
+
+## Why the §3.1 MUST NOT is a filter and not a clause
+
+Until §8 this module held `Bundle.noReservedConcepts`: no entry, each then a
+`Concept` by type, at a reserved path. §8 gave `index.md` content, so the
+carrier had to hold index files, and the way §3.1 says to tell files apart is
+by name: reserved filenames "have defined meaning", "all other `.md` files are
+concept documents". So `Bundle.concepts` is the entries at unreserved paths and
+`Bundle.indexes` the entries at `index.md`, and nothing at a reserved path is a
+concept.
+
+That removes the clause rather than weakening it. What it checked was the label
+a parser had put on an entry, and the parser is below the trust boundary in
+`docs/scope-and-stance.md`; a parser that follows §3.1 can never produce the
+violation. The MUST NOT is not erased either: no reading of the text lets a
+concept live at `index.md`, so there is no gap for the type to hide. A producer
+who writes concept content into `index.md` is visible only as frontmatter on an
+index file, and `Okf.V0_2.Index` carries that under `Policy.indexFrontmatter`.
 
 ## What is not modelled, and why
 
@@ -24,11 +42,8 @@ on: `Path` is relative to the bundle root, not to any repository root. How that
 root is found, the spec does not say; upstream's in-flight PR on §3.2 is about
 exactly that (`docs/pinned-revision.md`), so the model takes the root as given.
 
-**`index.md` and `log.md` themselves.** §3.1 puts them in the tree and outside
-the set of concept documents, so `Bundle`, which holds concepts only, cannot
-hold them. Their content is handed to §8 and §9, and that is where the carrier
-is reopened — as `Frontmatter` is reopened at §4.1. Widening it now would
-assert a shape those sections have not given.
+**`log.md`.** Reserved here, so outside `concepts`; its content is §9's and it
+gets no filter until then.
 
 **Non-markdown files.** §3 says the tree is "of markdown files" and §3.1 scopes
 its rule to `.md`. Neither says what a `.txt` beside them is: ignored,
@@ -60,51 +75,45 @@ def Path.isReserved (p : Path) : Bool :=
   | some name => reservedFilenames.contains name
   | none => false
 
-/-- §3.1: reserved filenames "MUST NOT be used for concept documents".
+/-- Whether a path's file is `index.md`, at any level. -/
+def Path.isIndex (p : Path) : Bool :=
+  p.getLast? == some "index.md"
 
-A bundle's entries are concept documents by type, so the clause is a condition
-on their paths. -/
-def Bundle.noReservedConcepts (b : Bundle) : Bool :=
-  b.entries.all fun e => !e.1.isReserved
+/-- §3.1: "all other `.md` files are concept documents". -/
+def Bundle.concepts (b : Bundle) : List (Path × Document) :=
+  b.entries.filter fun e => !e.1.isReserved
 
-/-- The `Prop` reading of `Bundle.noReservedConcepts`. -/
-def Bundle.NoReservedConcepts (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.1.isReserved = false
+/-- §3.1 and §8: the bundle's index files. -/
+def Bundle.indexes (b : Bundle) : List (Path × Document) :=
+  b.entries.filter fun e => e.1.isIndex
 
-theorem Bundle.noReservedConcepts_iff (b : Bundle) :
-    b.noReservedConcepts = true ↔ b.NoReservedConcepts := by
-  simp [Bundle.noReservedConcepts, Bundle.NoReservedConcepts]
-
-/-- The bundle with no concepts. §3 does not say whether it is a bundle; it is
-here as the smallest value the clause can be checked on. -/
+/-- The bundle with no files. §3 does not say whether it is a bundle; it is
+here as the smallest value the clauses can be checked on. -/
 def Bundle.empty : Bundle := ⟨[], List.nodup_nil⟩
 
-/-- A concept with nothing in it, for building witnesses. It fails §4.1, which
-is no matter here: §3.1 is a condition on paths. -/
-def Concept.blank : Concept := ⟨Frontmatter.empty, ""⟩
+/-- A document with nothing in it, for building witnesses. -/
+def Document.blank : Document := ⟨Frontmatter.empty, ""⟩
 
-/-- A bundle whose one concept sits at the root as `index.md`. -/
-def indexAsConcept : Bundle := ⟨[(["index.md"], Concept.blank)], by simp⟩
+/-- A bundle whose one file sits at the root as `index.md`. -/
+def indexAtRoot : Bundle := ⟨[(["index.md"], Document.blank)], by simp⟩
 
-/-- A bundle whose one concept sits two levels down as `log.md`. -/
-def nestedLogAsConcept : Bundle :=
-  ⟨[(["a", "b", "log.md"], Concept.blank)], by simp⟩
+/-- A bundle whose one file sits two levels down as `log.md`. -/
+def nestedLog : Bundle := ⟨[(["a", "b", "log.md"], Document.blank)], by simp⟩
 
-/-- A bundle whose one concept sits at the root as `Index.md`. -/
-def capitalisedIndex : Bundle := ⟨[(["Index.md"], Concept.blank)], by simp⟩
+/-- A bundle whose one file sits at the root as `Index.md`. -/
+def capitalisedIndex : Bundle := ⟨[(["Index.md"], Document.blank)], by simp⟩
 
-/-- §3.1 is satisfiable. -/
-theorem empty_noReservedConcepts : Bundle.empty.noReservedConcepts = true := by decide
+/-- §3.1: a file named `index.md` is not a concept. -/
+theorem indexAtRoot_concepts : indexAtRoot.concepts = [] := by decide
 
-/-- §3.1 is violable: a concept named `index.md` at the root. -/
-theorem indexAsConcept_violates : indexAsConcept.noReservedConcepts = false := by decide
+/-- §3.1 and §8: it is an index. -/
+theorem indexAtRoot_indexes : indexAtRoot.indexes = indexAtRoot.entries := rfl
 
-/-- §3.1 reaches every level: a concept named `log.md` two directories down. -/
-theorem nestedLogAsConcept_violates : nestedLogAsConcept.noReservedConcepts = false := by
-  decide
+/-- §3.1 reaches every level: `log.md` two directories down is not a concept. -/
+theorem nestedLog_concepts : nestedLog.concepts = [] := by decide
 
-/-- The commitment the module docstring records: the match is exact, so
-`Index.md` is not reserved. -/
-theorem capitalisedIndex_passes : capitalisedIndex.noReservedConcepts = true := by decide
+/-- The commitment the module docstring records: the match is exact, so a file
+named `Index.md` is a concept. -/
+theorem capitalisedIndex_concepts : capitalisedIndex.concepts = capitalisedIndex.entries := rfl
 
 end Okf.V0_2

@@ -85,11 +85,11 @@ def Frontmatter.authorActors (f : Frontmatter) (ok : Value → Bool) : Bool :=
 
 /-- §7 over the bundle, for the fields §7 names, under reading `form`. -/
 def Bundle.byActors (b : Bundle) (form : ActorForm) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.byActors form.accepts
+  b.concepts.all fun e => e.2.frontmatter.byActors form.accepts
 
 /-- The `Prop` reading of `Bundle.byActors`. -/
 def Bundle.ByActors (b : Bundle) (form : ActorForm) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.byActors form.accepts = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.byActors form.accepts = true
 
 theorem Bundle.byActors_iff (b : Bundle) (form : ActorForm) :
     b.byActors form = true ↔ b.ByActors form := by
@@ -98,11 +98,11 @@ theorem Bundle.byActors_iff (b : Bundle) (form : ActorForm) :
 /-- §7 over the bundle, for `author`, under reading `form`. Whether it applies
 is `Policy.actorFields`. -/
 def Bundle.authorActors (b : Bundle) (form : ActorForm) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.authorActors form.accepts
+  b.concepts.all fun e => e.2.frontmatter.authorActors form.accepts
 
 /-- The `Prop` reading of `Bundle.authorActors`. -/
 def Bundle.AuthorActors (b : Bundle) (form : ActorForm) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.authorActors form.accepts = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.authorActors form.accepts = true
 
 theorem Bundle.authorActors_iff (b : Bundle) (form : ActorForm) :
     b.authorActors form = true ↔ b.AuthorActors form := by

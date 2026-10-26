@@ -116,11 +116,11 @@ def Frontmatter.sourcesHaveResource (f : Frontmatter) : Bool :=
 
 /-- The third clause: every `sources` entry in the bundle carries `resource`. -/
 def Bundle.sourcesHaveResource (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.sourcesHaveResource
+  b.concepts.all fun e => e.2.frontmatter.sourcesHaveResource
 
 /-- The `Prop` reading of `Bundle.sourcesHaveResource`. -/
 def Bundle.SourcesHaveResource (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.sourcesHaveResource = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.sourcesHaveResource = true
 
 theorem Bundle.sourcesHaveResource_iff (b : Bundle) :
     b.sourcesHaveResource = true ↔ b.SourcesHaveResource := by
@@ -132,11 +132,11 @@ def Frontmatter.generatedHasBy (f : Frontmatter) : Bool :=
 
 /-- The fourth clause: every `generated` in the bundle carries `by`. -/
 def Bundle.generatedHasBy (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.generatedHasBy
+  b.concepts.all fun e => e.2.frontmatter.generatedHasBy
 
 /-- The `Prop` reading of `Bundle.generatedHasBy`. -/
 def Bundle.GeneratedHasBy (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.generatedHasBy = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.generatedHasBy = true
 
 theorem Bundle.generatedHasBy_iff (b : Bundle) :
     b.generatedHasBy = true ↔ b.GeneratedHasBy := by
@@ -149,11 +149,11 @@ def Frontmatter.verifiedEntriesKeyed (f : Frontmatter) : Bool :=
 
 /-- The strict reading over a whole bundle. -/
 def Bundle.verifiedEntriesKeyed (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.verifiedEntriesKeyed
+  b.concepts.all fun e => e.2.frontmatter.verifiedEntriesKeyed
 
 /-- The `Prop` reading of `Bundle.verifiedEntriesKeyed`. -/
 def Bundle.VerifiedEntriesKeyed (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.verifiedEntriesKeyed = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.verifiedEntriesKeyed = true
 
 theorem Bundle.verifiedEntriesKeyed_iff (b : Bundle) :
     b.verifiedEntriesKeyed = true ↔ b.VerifiedEntriesKeyed := by
@@ -206,11 +206,11 @@ def Frontmatter.provenanceTypesHold (f : Frontmatter) : Bool :=
 
 /-- The strict reading over a whole bundle. -/
 def Bundle.provenanceTypesHold (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.provenanceTypesHold
+  b.concepts.all fun e => e.2.frontmatter.provenanceTypesHold
 
 /-- The `Prop` reading of `Bundle.provenanceTypesHold`. -/
 def Bundle.ProvenanceTypesHold (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.provenanceTypesHold = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.provenanceTypesHold = true
 
 theorem Bundle.provenanceTypesHold_iff (b : Bundle) :
     b.provenanceTypesHold = true ↔ b.ProvenanceTypesHold := by
