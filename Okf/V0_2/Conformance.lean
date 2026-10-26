@@ -46,17 +46,42 @@ two readings of `actorForm` and both of `actorFields`, and is rejected under
 `threeForms` with `withAuthor`. §10.2's example indents its computation, so it
 separates `fencedOnly` from `fencedOrIndented` and is rejected under
 `fencedOnly`. Both are the scenario `docs/scope-and-stance.md` named before any
-Lean existed: a rule in one section rejecting the example in another.
+Lean existed: a rule in one section rejecting the example in another. §8's own
+root `okf_version` is the third: §11.2 read literally rejects it.
+
+## §11, read against this predicate
+
+§11 defines "conformant" by three conditions: every non-reserved `.md` file has
+a parseable frontmatter block, every block has a non-empty `type`, and every
+reserved file follows §8 and §9. Then: producers "SHOULD follow §5 through
+§10", and consumers "SHOULD treat all other constraints as soft guidance".
+
+That is not how §5 and §10 read themselves. §5.1 says `resource` is REQUIRED
+within a `sources` entry, §5.2 that `generated.by` is REQUIRED, §10.2 that
+`runtime` is REQUIRED for the type. Under §11 those are guidance a conformant
+bundle may violate; under their own sections they are conditions. So
+`Policy.familyClauses` gates clauses three, four and five together. Under §11.3
+the §9 date-form MUST stays unconditional, since it is "the structure in §9".
+
+§11.2 says "every frontmatter block". §8 permits a root `index.md` whose only
+key is `okf_version`. Read literally, §11.2 rejects §8's own permitted form;
+read as scoped by §11.1's "non-reserved", it does not. `Policy.typeScope`
+holds that choice, and clause two takes it as a parameter.
+
+§11.1 is parse-side: "parseable" is below the trust boundary, and post-parse
+the model cannot tell a missing block from an empty one. §11.2 fails both, so
+nothing is lost. §11's consumer rules, three in the middle block and five in
+the last, bind consumers and are not modelled, as throughout. Two of the five,
+"broken cross-links" and "missing `index.md` files", confirm the §6 and §3
+readings.
 -/
 
 namespace Okf.V0_2
 
 /-- A bundle conforms under policy `p`. -/
 def conformant (p : Policy) (b : Bundle) : Bool :=
-  b.allHaveType
-    && b.sourcesHaveResource
-    && b.generatedHasBy
-    && b.attestedHaveRuntime
+  b.typedBlocks p.typeScope
+    && p.familyClauses.gate (b.sourcesHaveResource && b.generatedHasBy && b.attestedHaveRuntime)
     && b.logDatesIso
     && p.fieldTypes.gate (b.statedTypesHold && b.provenanceTypesHold && b.computationTypesHold)
     && p.verifiedEntryKeys.gate b.verifiedEntriesKeyed
@@ -70,7 +95,9 @@ def conformant (p : Policy) (b : Bundle) : Bool :=
 
 /-- The `Prop` reading of `conformant`. -/
 def Conformant (p : Policy) (b : Bundle) : Prop :=
-  b.AllHaveType ∧ b.SourcesHaveResource ∧ b.GeneratedHasBy ∧ b.AttestedHaveRuntime
+  b.TypedBlocks p.typeScope
+    ∧ (p.familyClauses = .required →
+        b.SourcesHaveResource ∧ b.GeneratedHasBy ∧ b.AttestedHaveRuntime)
     ∧ b.LogDatesIso
     ∧ (p.fieldTypes = .required →
         b.StatedTypesHold ∧ b.ProvenanceTypesHold ∧ b.ComputationTypesHold)
@@ -86,7 +113,7 @@ def Conformant (p : Policy) (b : Bundle) : Prop :=
 theorem conformant_iff (p : Policy) (b : Bundle) :
     conformant p b = true ↔ Conformant p b := by
   simp only [conformant, Conformant, Bool.and_eq_true, Force.gate_eq_true_iff,
-    ActorFields.gate_eq_true_iff, Bundle.allHaveType_iff, Bundle.sourcesHaveResource_iff,
+    ActorFields.gate_eq_true_iff, Bundle.typedBlocks_iff, Bundle.sourcesHaveResource_iff,
     Bundle.generatedHasBy_iff, Bundle.attestedHaveRuntime_iff, Bundle.logDatesIso_iff,
     Bundle.statedTypesHold_iff, Bundle.provenanceTypesHold_iff, Bundle.computationTypesHold_iff,
     Bundle.verifiedEntriesKeyed_iff, Bundle.byActors_iff, Bundle.authorActors_iff,
@@ -275,7 +302,7 @@ def section10Examples : Bundle :=
 every `Force`-gated predicate, holds of `b`. With these, `simp` closes
 `conformant p b = true` for any `p`. -/
 structure AllClausesHold (b : Bundle) : Prop where
-  allHaveType : b.allHaveType = true
+  typedBlocks : ∀ scope, b.typedBlocks scope = true
   sourcesHaveResource : b.sourcesHaveResource = true
   generatedHasBy : b.generatedHasBy = true
   attestedHaveRuntime : b.attestedHaveRuntime = true
@@ -294,7 +321,7 @@ structure AllClausesHold (b : Bundle) : Prop where
 
 theorem conformant_of_allClausesHold {b : Bundle} (h : AllClausesHold b) (p : Policy) :
     conformant p b = true := by
-  simp [conformant, h.allHaveType, h.sourcesHaveResource, h.generatedHasBy,
+  simp [conformant, h.typedBlocks, h.sourcesHaveResource, h.generatedHasBy,
     h.attestedHaveRuntime, h.logDatesIso, h.statedTypesHold, h.provenanceTypesHold,
     h.computationTypesHold, h.verifiedEntriesKeyed, h.byActors, h.authorActors,
     h.indexFrontmatterClean, h.logNewestFirst, h.contractsComplete, h.computationsProvided,
@@ -303,7 +330,7 @@ theorem conformant_of_allClausesHold {b : Bundle} (h : AllClausesHold b) (p : Po
 /-- §4.3 and §4.4 conform, whatever the policy. -/
 theorem section4Examples_conformant (p : Policy) : conformant p section4Examples = true :=
   conformant_of_allClausesHold
-    { allHaveType := by decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
+    { typedBlocks := by intro s; cases s <;> decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
       computationTypesHold := by decide, verifiedEntriesKeyed := by decide,
@@ -315,7 +342,7 @@ theorem section4Examples_conformant (p : Policy) : conformant p section4Examples
 /-- §4.1: "a concept carrying just `type` is fully conformant". -/
 theorem typeOnly_conformant (p : Policy) : conformant p typeOnly = true :=
   conformant_of_allClausesHold
-    { allHaveType := by decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
+    { typedBlocks := by intro s; cases s <;> decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
       computationTypesHold := by decide, verifiedEntriesKeyed := by decide,
@@ -333,8 +360,10 @@ theorem section5Examples_conformant (p : Policy)
   have hAuthorAny : section5Examples.authorActors .unconstrained = true := by decide
   have hComp : ∀ form, section5Examples.computationsProvided form = true := by
     intro f; cases f <;> decide
+  have hTyped : ∀ scope, section5Examples.typedBlocks scope = true := by
+    intro sc; cases sc <;> decide
   have hRest :
-      section5Examples.allHaveType = true ∧ section5Examples.sourcesHaveResource = true
+      section5Examples.sourcesHaveResource = true
         ∧ section5Examples.generatedHasBy = true ∧ section5Examples.attestedHaveRuntime = true
         ∧ section5Examples.logDatesIso = true ∧ section5Examples.statedTypesHold = true
         ∧ section5Examples.provenanceTypesHold = true
@@ -343,18 +372,18 @@ theorem section5Examples_conformant (p : Policy)
         ∧ section5Examples.indexFrontmatterClean = true
         ∧ section5Examples.logNewestFirst = true ∧ section5Examples.contractsComplete = true
         ∧ section5Examples.footnotesJoined = true := by decide
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl⟩ := p
+  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases af <;> cases afs <;>
     first
     | exact absurd ⟨rfl, rfl⟩ h
-    | simp [conformant, hBy, hAuthorOpen, hAuthorAny, hComp, hRest, ActorFields.gate]
+    | simp [conformant, hBy, hAuthorOpen, hAuthorAny, hComp, hRest, hTyped, ActorFields.gate]
 
 /-- The one policy that rejects §5's snippets: §7's three forms, reaching
 `author` as §5.1 says they do, meet `author: team:ga4-docs`. The spec's own
 example fails the spec's own rule under that reading. -/
 theorem section5Examples_rejected :
     conformant ⟨.convention, .convention, .threeForms, .withAuthor, .convention, .convention,
-      .convention, .unconstrained, .convention⟩ section5Examples = false := by
+      .convention, .unconstrained, .convention, .required, .conceptsOnly⟩ section5Examples = false := by
   decide
 
 /-- §9's own log conforms under every policy. Its body is long enough that the
@@ -364,7 +393,9 @@ theorem section9Log_conformant (p : Policy) : conformant p section9Log = true :=
   have hOrder : section9Log.logNewestFirst = true := by decide +kernel
   have hConcepts : section9Log.concepts = [] := rfl
   have hIndexes : section9Log.indexes = [] := rfl
-  simp [conformant, hDates, hOrder, hConcepts, hIndexes, Bundle.allHaveType,
+  have hTyped : ∀ scope, section9Log.typedBlocks scope = true := by
+    intro sc; cases sc <;> decide +kernel
+  simp [conformant, hDates, hOrder, hConcepts, hIndexes, hTyped,
     Bundle.sourcesHaveResource, Bundle.generatedHasBy, Bundle.attestedHaveRuntime,
     Bundle.statedTypesHold, Bundle.provenanceTypesHold, Bundle.computationTypesHold,
     Bundle.verifiedEntriesKeyed, Bundle.byActors, Bundle.authorActors,
@@ -387,8 +418,10 @@ theorem section10Examples_conformant (p : Policy) (h : p.inlineComp ≠ .fencedO
   have hBy : ∀ form, section10Examples.byActors form = true := by intro f; cases f <;> decide
   have hAuthor : ∀ form, section10Examples.authorActors form = true := by
     intro f; cases f <;> decide
+  have hTyped : ∀ scope, section10Examples.typedBlocks scope = true := by
+    intro sc; cases sc <;> decide
   have hRest :
-      section10Examples.allHaveType = true ∧ section10Examples.sourcesHaveResource = true
+      section10Examples.sourcesHaveResource = true
         ∧ section10Examples.generatedHasBy = true
         ∧ section10Examples.attestedHaveRuntime = true
         ∧ section10Examples.logDatesIso = true ∧ section10Examples.statedTypesHold = true
@@ -398,18 +431,18 @@ theorem section10Examples_conformant (p : Policy) (h : p.inlineComp ≠ .fencedO
         ∧ section10Examples.indexFrontmatterClean = true
         ∧ section10Examples.logNewestFirst = true
         ∧ section10Examples.contractsComplete = true := by decide
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl⟩ := p
+  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases ic with
   | fencedOnly => exact absurd rfl h
-  | fencedOrIndented => simp [conformant, hFootnotes, hCompIndented, hBy, hAuthor, hRest]
-  | unconstrained => simp [conformant, hFootnotes, hCompAny, hBy, hAuthor, hRest]
+  | fencedOrIndented => simp [conformant, hFootnotes, hCompIndented, hBy, hAuthor, hRest, hTyped]
+  | unconstrained => simp [conformant, hFootnotes, hCompAny, hBy, hAuthor, hRest, hTyped]
 
 /-- The one reading that rejects §10.2's example: §10.3's "single fenced code
 block", met by the example's indented block and absent `computation` key. The
 spec's own example fails the spec's own rule under that reading. -/
 theorem section10Examples_rejected :
     conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention, .convention,
-      .convention, .fencedOnly, .convention⟩ section10Examples = false := by
+      .convention, .fencedOnly, .convention, .required, .conceptsOnly⟩ section10Examples = false := by
   have h : section10Examples.computationsProvided .fencedOnly = false := by decide +kernel
   simp [conformant, h]
 
@@ -420,7 +453,7 @@ namespace Gaps
 /-- A policy that waives every `Force` field and constrains nothing. -/
 def lax : Policy :=
   ⟨.convention, .convention, .unconstrained, .listedOnly, .convention, .convention,
-    .convention, .unconstrained, .convention⟩
+    .convention, .unconstrained, .convention, .convention, .conceptsOnly⟩
 
 /-- A concept whose `tags` is a scalar where §4.1 describes a list. -/
 def scalarTags : Bundle :=
@@ -580,12 +613,14 @@ theorem inlineComp_separates :
   have h2 : section10Examples.computationsProvided .fencedOrIndented = true := by decide +kernel
   have hFootnotes : section10Examples.footnotesJoined = true := by decide +kernel
   have hBy : ∀ form, section10Examples.byActors form = true := by intro f; cases f <;> decide
+  have hTyped : ∀ scope, section10Examples.typedBlocks scope = true := by
+    intro sc; cases sc <;> decide
   have hRest :
-      section10Examples.allHaveType = true ∧ section10Examples.sourcesHaveResource = true
+      section10Examples.sourcesHaveResource = true
         ∧ section10Examples.generatedHasBy = true
         ∧ section10Examples.attestedHaveRuntime = true
         ∧ section10Examples.logDatesIso = true := by decide
-  simp [conformant, lax, h1, h2, hFootnotes, hBy, hRest, Force.gate, ActorFields.gate]
+  simp [conformant, lax, h1, h2, hFootnotes, hBy, hRest, hTyped, Force.gate, ActorFields.gate]
 
 /-- "Provide the computation in one of two ways" still constrains when read as
 binding: `bareComputation` has the key and no body, which passes, and the same
@@ -619,19 +654,67 @@ theorem footnoteLabels_separates :
       ≠ conformant lax orphanFootnote := by
   decide
 
+/-- A concept whose `generated` has `at` and no `by`. -/
+def generatedWithoutBy : Bundle :=
+  ⟨[(["concept.md"],
+     ⟨⟨[("type", .scalar "Reference"),
+        ("generated", .map [("at", .scalar "2026-06-20T22:53:05Z")])], by simp⟩, ""⟩)],
+   by simp⟩
+
+/-- §5.2 says `generated.by` is REQUIRED; §11 lists three conditions, not that
+one, and says producers SHOULD follow §5 through §10. Under §11 the concept
+conforms; under §5.2 it does not. Finding: `docs/findings.md`, 2026-10-26,
+"§11 defines conformance without the REQUIREDs of §5 and §10". -/
+theorem familyClauses_separates :
+    conformant { lax with familyClauses := .required } generatedWithoutBy
+      ≠ conformant lax generatedWithoutBy := by
+  decide
+
+/-- §11.2 says "every frontmatter block contains a non-empty `type`"; §8
+permits a root `index.md` whose only key is `okf_version`. Read literally,
+§11.2 rejects §8's own form; scoped to non-reserved files, it does not. The
+witness is the spec's text. Finding: `docs/findings.md`, 2026-10-26, "§11.2
+read literally rejects §8's root `okf_version`". -/
+theorem typeScope_separates :
+    conformant { lax with typeScope := .everyBlock } rootIndexWithVersion
+      ≠ conformant lax rootIndexWithVersion := by
+  decide
+
 end Gaps
 
-/-- §8's own exception conforms under every policy. -/
-theorem rootIndexWithVersion_conformant (p : Policy) :
-    conformant p Gaps.rootIndexWithVersion = true :=
-  conformant_of_allClausesHold
-    { allHaveType := by decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
-      attestedHaveRuntime := by decide, logDatesIso := by decide,
-      statedTypesHold := by decide, provenanceTypesHold := by decide,
-      computationTypesHold := by decide, verifiedEntriesKeyed := by decide,
-      byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
-      indexFrontmatterClean := by decide, logNewestFirst := by decide,
-      contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,
-      footnotesJoined := by decide } p
+/-- §8's own exception conforms under every policy that scopes §11.2 to
+concepts. -/
+theorem rootIndexWithVersion_conformant (p : Policy) (h : p.typeScope = .conceptsOnly) :
+    conformant p Gaps.rootIndexWithVersion = true := by
+  have hTyped : Gaps.rootIndexWithVersion.typedBlocks .conceptsOnly = true := by decide
+  have hBy : ∀ form, Gaps.rootIndexWithVersion.byActors form = true := by
+    intro f; cases f <;> decide
+  have hAuthor : ∀ form, Gaps.rootIndexWithVersion.authorActors form = true := by
+    intro f; cases f <;> decide
+  have hComp : ∀ form, Gaps.rootIndexWithVersion.computationsProvided form = true := by
+    intro f; cases f <;> decide
+  have hRest :
+      Gaps.rootIndexWithVersion.sourcesHaveResource = true
+        ∧ Gaps.rootIndexWithVersion.generatedHasBy = true
+        ∧ Gaps.rootIndexWithVersion.attestedHaveRuntime = true
+        ∧ Gaps.rootIndexWithVersion.logDatesIso = true
+        ∧ Gaps.rootIndexWithVersion.statedTypesHold = true
+        ∧ Gaps.rootIndexWithVersion.provenanceTypesHold = true
+        ∧ Gaps.rootIndexWithVersion.computationTypesHold = true
+        ∧ Gaps.rootIndexWithVersion.verifiedEntriesKeyed = true
+        ∧ Gaps.rootIndexWithVersion.indexFrontmatterClean = true
+        ∧ Gaps.rootIndexWithVersion.logNewestFirst = true
+        ∧ Gaps.rootIndexWithVersion.contractsComplete = true
+        ∧ Gaps.rootIndexWithVersion.footnotesJoined = true := by decide
+  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
+  cases ts with
+  | conceptsOnly => simp [conformant, hTyped, hBy, hAuthor, hComp, hRest]
+  | everyBlock => simp at h
+
+/-- The one reading that rejects §8's own exception: §11.2 taken as every
+block. The spec's §8 permission fails the spec's §11.2 under that reading. -/
+theorem rootIndexWithVersion_rejected :
+    conformant { Gaps.lax with typeScope := .everyBlock } Gaps.rootIndexWithVersion = false := by
+  decide
 
 end Okf.V0_2

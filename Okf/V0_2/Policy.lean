@@ -66,6 +66,14 @@ theorem ActorFields.gate_eq_true_iff (a : ActorFields) (b : Bool) :
     a.gate b = true ↔ (a = .withAuthor → b = true) := by
   cases a <;> simp [ActorFields.gate]
 
+/-- Which frontmatter blocks §11.2's "every frontmatter block contains a
+non-empty `type`" reaches. `conceptsOnly` scopes it by §11.1's "non-reserved";
+`everyBlock` reads it literally, which rejects §8's root `okf_version`. -/
+inductive TypeScope where
+  | conceptsOnly
+  | everyBlock
+  deriving DecidableEq, Repr
+
 /-- The readings of §10.3's inline computation. `fencedOnly` is the text, "a
 single fenced code block"; `fencedOrIndented` also admits the indented block
 §10.2's own example uses; `unconstrained` reads "provide the computation in
@@ -76,7 +84,7 @@ inductive InlineCompForm where
   | unconstrained
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §10. -/
+/-- The spec's open choices, as of §11. -/
 structure Policy where
   /-- §4.1 describes value types for its five named keys, and §5 describes the
   shapes of its families and the three values of `status`, with no keyword
@@ -96,13 +104,15 @@ structure Policy where
   (`docs/findings.md`, 2026-10-26). Whether `actorForm` reaches `author`. -/
   actorFields : ActorFields
   /-- §8 says "index files contain no frontmatter", excepting `okf_version` at
-  the root, with no keyword attached (`docs/findings.md`, 2026-10-26). Whether
+  the root, with no keyword attached; §11.3 binds "the structure in §8"
+  (`docs/findings.md`, 2026-10-26). Whether that sentence is structure, so that
   an index file with other frontmatter is non-conformant. -/
   indexFrontmatter : Force
   /-- §9 describes a log as "date-grouped entries, newest first", with the MUST
-  on the date form and no keyword on the order (`docs/findings.md`,
-  2026-10-26). Whether a log whose date headings are out of order is
-  non-conformant. The field `docs/scope-and-stance.md` sketched by name. -/
+  on the date form and no keyword on the order; §11.3 binds "the structure in
+  §9" (`docs/findings.md`, 2026-10-26). Whether order is structure, so that a
+  log whose date headings are out of order is non-conformant. The field
+  `docs/scope-and-stance.md` sketched by name. -/
   logOrdering : Force
   /-- §10.2 marks `runtime` REQUIRED and `computation` Optional, and marks
   `executor` and `attester` neither way (`docs/findings.md`, 2026-10-26).
@@ -117,6 +127,15 @@ structure Policy where
   `sources[].id`", with no keyword (`docs/findings.md`, 2026-10-26). Whether a
   footnote definition with no matching `id` is non-conformant. -/
   footnoteLabels : Force
+  /-- §11 defines conformance by three conditions and says producers "SHOULD
+  follow §5 through §10", while §5.1, §5.2 and §10.2 say REQUIRED
+  (`docs/findings.md`, 2026-10-26). Whether those REQUIREDs are conformance
+  conditions or producer guidance. -/
+  familyClauses : Force
+  /-- §11.2 says "every frontmatter block"; §8 permits a root `index.md` with
+  `okf_version` and no `type` (`docs/findings.md`, 2026-10-26). Which blocks
+  §11.2 reaches. -/
+  typeScope : TypeScope
   deriving DecidableEq, Repr
 
 end Okf.V0_2

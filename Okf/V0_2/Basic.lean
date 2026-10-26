@@ -130,6 +130,12 @@ def Frontmatter.empty : Frontmatter := ⟨[], List.nodup_nil⟩
 def Frontmatter.get? (f : Frontmatter) (key : String) : Option Value :=
   f.entries.lookup key
 
+/-- No keys at all. Post-parse, a file with no frontmatter block and a file
+with an empty one both land here; §11.1's "contains a parseable YAML
+frontmatter block" is parse-side, and §11.2 fails both anyway. -/
+def Frontmatter.isEmpty (f : Frontmatter) : Bool :=
+  f.entries.isEmpty
+
 /-- Everything in the concept document after the frontmatter.
 
 Text, because that is all §2 makes it, and §6, read, states no rule over body
