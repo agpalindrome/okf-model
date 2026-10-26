@@ -2,6 +2,7 @@ import Okf.V0_2.Structure
 import Okf.V0_2.Document
 import Okf.V0_2.Provenance
 import Okf.V0_2.Actors
+import Okf.V0_2.Index
 import Okf.V0_2.Policy
 
 /-!
@@ -44,8 +45,7 @@ namespace Okf.V0_2
 
 /-- A bundle conforms under policy `p`. -/
 def conformant (p : Policy) (b : Bundle) : Bool :=
-  b.noReservedConcepts
-    && b.allHaveType
+  b.allHaveType
     && b.sourcesHaveResource
     && b.generatedHasBy
     && (match p.fieldTypes with
@@ -58,24 +58,28 @@ def conformant (p : Policy) (b : Bundle) : Bool :=
     && (match p.actorFields with
         | .withAuthor => b.authorActors p.actorForm
         | .listedOnly => true)
+    && (match p.indexFrontmatter with
+        | .required => b.indexFrontmatterClean
+        | .convention => true)
 
 /-- The `Prop` reading of `conformant`. -/
 def Conformant (p : Policy) (b : Bundle) : Prop :=
-  b.NoReservedConcepts ∧ b.AllHaveType ∧ b.SourcesHaveResource ∧ b.GeneratedHasBy
+  b.AllHaveType ∧ b.SourcesHaveResource ∧ b.GeneratedHasBy
     ∧ (p.fieldTypes = .required → b.StatedTypesHold ∧ b.ProvenanceTypesHold)
     ∧ (p.verifiedEntryKeys = .required → b.VerifiedEntriesKeyed)
     ∧ b.ByActors p.actorForm
     ∧ (p.actorFields = .withAuthor → b.AuthorActors p.actorForm)
+    ∧ (p.indexFrontmatter = .required → b.IndexFrontmatterClean)
 
 theorem conformant_iff (p : Policy) (b : Bundle) :
     conformant p b = true ↔ Conformant p b := by
-  obtain ⟨ft, vk, af, afs⟩ := p
-  cases ft <;> cases vk <;> cases af <;> cases afs <;>
-    simp [conformant, Conformant, ← Bundle.noReservedConcepts_iff,
-      ← Bundle.allHaveType_iff, ← Bundle.sourcesHaveResource_iff,
+  obtain ⟨ft, vk, af, afs, ifm⟩ := p
+  cases ft <;> cases vk <;> cases af <;> cases afs <;> cases ifm <;>
+    simp [conformant, Conformant, ← Bundle.allHaveType_iff, ← Bundle.sourcesHaveResource_iff,
       ← Bundle.generatedHasBy_iff, ← Bundle.statedTypesHold_iff,
       ← Bundle.provenanceTypesHold_iff, ← Bundle.verifiedEntriesKeyed_iff,
-      ← Bundle.byActors_iff, ← Bundle.authorActors_iff, and_assoc]
+      ← Bundle.byActors_iff, ← Bundle.authorActors_iff,
+      ← Bundle.indexFrontmatterClean_iff, and_assoc]
 
 /-- A one-key frontmatter, for the witnesses below. -/
 private def fm1 (k : String) (v : Value) : Frontmatter := ⟨[(k, v)], by simp⟩
@@ -179,20 +183,20 @@ def section5Examples : Bundle :=
 
 /-- §4.3 and §4.4 conform, whatever the policy. -/
 theorem section4Examples_conformant (p : Policy) : conformant p section4Examples = true := by
-  obtain ⟨ft, vk, af, afs⟩ := p
-  cases ft <;> cases vk <;> cases af <;> cases afs <;> decide
+  obtain ⟨ft, vk, af, afs, ifm⟩ := p
+  cases ft <;> cases vk <;> cases af <;> cases afs <;> cases ifm <;> decide
 
 /-- §4.1: "a concept carrying just `type` is fully conformant". -/
 theorem typeOnly_conformant (p : Policy) : conformant p typeOnly = true := by
-  obtain ⟨ft, vk, af, afs⟩ := p
-  cases ft <;> cases vk <;> cases af <;> cases afs <;> decide
+  obtain ⟨ft, vk, af, afs, ifm⟩ := p
+  cases ft <;> cases vk <;> cases af <;> cases afs <;> cases ifm <;> decide
 
 /-- §5's snippets conform under every policy but one. -/
 theorem section5Examples_conformant (p : Policy)
     (h : ¬ (p.actorForm = .threeForms ∧ p.actorFields = .withAuthor)) :
     conformant p section5Examples = true := by
-  obtain ⟨ft, vk, af, afs⟩ := p
-  cases ft <;> cases vk <;> cases af <;> cases afs <;>
+  obtain ⟨ft, vk, af, afs, ifm⟩ := p
+  cases ft <;> cases vk <;> cases af <;> cases afs <;> cases ifm <;>
     first
     | decide
     | exact absurd ⟨rfl, rfl⟩ h
@@ -201,7 +205,7 @@ theorem section5Examples_conformant (p : Policy)
 `author` as §5.1 says they do, meet `author: team:ga4-docs`. The spec's own
 example fails the spec's own rule under that reading. -/
 theorem section5Examples_rejected :
-    conformant ⟨.convention, .convention, .threeForms, .withAuthor⟩ section5Examples = false := by
+    conformant ⟨.convention, .convention, .threeForms, .withAuthor, .convention⟩ section5Examples = false := by
   decide
 
 namespace Gaps
@@ -218,8 +222,8 @@ def scalarTags : Bundle :=
 Finding: `docs/findings.md`, 2026-10-26, "§4.1 states value types without
 saying whether they bind". -/
 theorem fieldTypes_separates :
-    conformant ⟨.required, .convention, .unconstrained, .listedOnly⟩ scalarTags
-      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly⟩ scalarTags := by
+    conformant ⟨.required, .convention, .unconstrained, .listedOnly, .convention⟩ scalarTags
+      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention⟩ scalarTags := by
   decide
 
 /-- A concept whose `status` is none of §5.4's three values. -/
@@ -233,8 +237,8 @@ def unknownStatus : Bundle :=
 `docs/findings.md`, 2026-10-26, "§5 states shapes and an enumeration without
 force". -/
 theorem fieldTypes_separates_on_status :
-    conformant ⟨.required, .convention, .unconstrained, .listedOnly⟩ unknownStatus
-      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly⟩ unknownStatus := by
+    conformant ⟨.required, .convention, .unconstrained, .listedOnly, .convention⟩ unknownStatus
+      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention⟩ unknownStatus := by
   decide
 
 /-- A concept whose one `verified` event has `at` and no `by`. -/
@@ -250,8 +254,8 @@ they bind, so `Policy.verifiedEntryKeys` is a choice the spec left open.
 Finding: `docs/findings.md`, 2026-10-26, "§5.2 marks nothing within a
 `verified` event". -/
 theorem verifiedEntryKeys_separates :
-    conformant ⟨.required, .required, .unconstrained, .listedOnly⟩ verifiedWithoutBy
-      ≠ conformant ⟨.required, .convention, .unconstrained, .listedOnly⟩ verifiedWithoutBy := by
+    conformant ⟨.required, .required, .unconstrained, .listedOnly, .convention⟩ verifiedWithoutBy
+      ≠ conformant ⟨.required, .convention, .unconstrained, .listedOnly, .convention⟩ verifiedWithoutBy := by
   decide
 
 /-- §7 lists three actor forms with no keyword, and §5.1's own example writes
@@ -260,8 +264,8 @@ and the open `<scheme>:<id>` reading admits it. The witness is the spec's text.
 Finding: `docs/findings.md`, 2026-10-26, "§7's actor forms carry no force, and
 §5.1 uses a fourth". -/
 theorem actorForm_separates :
-    conformant ⟨.convention, .convention, .threeForms, .withAuthor⟩ section5Examples
-      ≠ conformant ⟨.convention, .convention, .schemeOrSlash, .withAuthor⟩ section5Examples := by
+    conformant ⟨.convention, .convention, .threeForms, .withAuthor, .convention⟩ section5Examples
+      ≠ conformant ⟨.convention, .convention, .schemeOrSlash, .withAuthor, .convention⟩ section5Examples := by
   decide
 
 /-- A concept generated by `bob`: no scheme, no slash. -/
@@ -274,8 +278,8 @@ def bareNameActor : Bundle :=
 /-- The open reading still constrains: `bob` separates it from reading the
 convention as description. Same finding as `actorForm_separates`. -/
 theorem actorForm_separates_unconstrained :
-    conformant ⟨.convention, .convention, .schemeOrSlash, .listedOnly⟩ bareNameActor
-      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly⟩ bareNameActor := by
+    conformant ⟨.convention, .convention, .schemeOrSlash, .listedOnly, .convention⟩ bareNameActor
+      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention⟩ bareNameActor := by
   decide
 
 /-- §7 names `generated.by` and `verified[].by`; §5.1 says `author` is in the
@@ -284,10 +288,51 @@ its own list and not if it reaches `author`. The witness is the spec's text.
 Finding: `docs/findings.md`, 2026-10-26, "§7 and §5.1 disagree on whether
 `author` is an actor field". -/
 theorem actorFields_separates :
-    conformant ⟨.convention, .convention, .threeForms, .listedOnly⟩ section5Examples
-      ≠ conformant ⟨.convention, .convention, .threeForms, .withAuthor⟩ section5Examples := by
+    conformant ⟨.convention, .convention, .threeForms, .listedOnly, .convention⟩ section5Examples
+      ≠ conformant ⟨.convention, .convention, .threeForms, .withAuthor, .convention⟩ section5Examples := by
+  decide
+
+/-- A root `index.md` carrying `okf_version`, the exception §8 names, beside
+one concept. -/
+def rootIndexWithVersion : Bundle :=
+  ⟨[ (["index.md"], ⟨⟨[("okf_version", .scalar "0.2")], by simp⟩, "# Contents\n"⟩),
+     (["concept.md"], ⟨⟨[("type", .scalar "Reference")], by simp⟩, ""⟩) ],
+   by simp⟩
+
+/-- An `index.md` carrying `title:`. -/
+def indexWithTitle : Bundle :=
+  ⟨[(["index.md"], ⟨⟨[("title", .scalar "Contents")], by simp⟩, ""⟩)], by simp⟩
+
+/-- An `index.md` one directory down carrying `okf_version`, which §8 allows at
+the root only. -/
+def nestedIndexWithVersion : Bundle :=
+  ⟨[(["a", "index.md"], ⟨⟨[("okf_version", .scalar "0.2")], by simp⟩, ""⟩)], by simp⟩
+
+/-- §8 says index files contain no frontmatter, in the indicative. Read as
+binding, `title:` on an index fails; read as description, it passes. Finding:
+`docs/findings.md`, 2026-10-26, "§8 says index files contain no frontmatter,
+without force". -/
+theorem indexFrontmatter_separates :
+    conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .required⟩ indexWithTitle
+      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention⟩
+          indexWithTitle := by
+  decide
+
+/-- The exception is root-only: `okf_version` one level down separates the same
+two readings. -/
+theorem indexFrontmatter_separates_on_depth :
+    conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .required⟩
+        nestedIndexWithVersion
+      ≠ conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention⟩
+          nestedIndexWithVersion := by
   decide
 
 end Gaps
+
+/-- §8's own exception conforms under every policy. -/
+theorem rootIndexWithVersion_conformant (p : Policy) :
+    conformant p Gaps.rootIndexWithVersion = true := by
+  obtain ⟨ft, vk, af, afs, ifm⟩ := p
+  cases ft <;> cases vk <;> cases af <;> cases afs <;> cases ifm <;> decide
 
 end Okf.V0_2

@@ -261,3 +261,37 @@ not. The model does not pick.
 and §7's list does not?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §8 says index files contain no frontmatter, without force
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.indexFrontmatter_separates` and
+`Okf.V0_2.Gaps.indexFrontmatter_separates_on_depth`, both invented
+
+§8 says "Index files contain no frontmatter, with one exception: a bundle-root
+`index.md` MAY carry an `okf_version` key (§12)." The exception carries a MAY;
+the rule it excepts carries nothing. §3.1 says the reserved filenames "MUST NOT
+be used for concept documents", and frontmatter on an `index.md` is the one way
+a consumer can see that a producer did.
+
+So an `index.md` with `title:` in its frontmatter conforms if §8's sentence is
+description and not if it binds, and so does an `okf_version` key on an
+`index.md` below the root. §8's own text is well-formed, so both witnesses are
+invented.
+
+**What the model does.** `Policy.indexFrontmatter : Force`. The strict reading,
+`Document.indexFrontmatterClean`, is an empty frontmatter, or at the root one
+holding `okf_version` and nothing else. A separate field from `fieldTypes`,
+because §3.1's MUST NOT stands behind this rule and a reader can hold it as
+binding while holding §4's shape descriptions as conventions. The model does not
+pick.
+
+This is also the section that reopened `Bundle`: it now maps paths to
+`Document`s and tells concepts from index files by path, as §3.1 says to. The
+§3.1 clause that forbade a concept at a reserved path went with it;
+`Okf.V0_2.Structure` records why that removes nothing the text decides.
+
+**The question for upstream.** Is frontmatter on an `index.md`, other than
+`okf_version` at the root, a conformance failure?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.

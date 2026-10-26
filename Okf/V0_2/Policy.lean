@@ -40,7 +40,7 @@ inductive ActorFields where
   | withAuthor
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §7. -/
+/-- The spec's open choices, as of §8. -/
 structure Policy where
   /-- §4.1 describes value types for its five named keys, and §5 describes the
   shapes of its families and the three values of `status`, with no keyword
@@ -59,6 +59,10 @@ structure Policy where
   /-- §7 names two fields; §5.1 says `author` is in the convention too
   (`docs/findings.md`, 2026-10-26). Whether `actorForm` reaches `author`. -/
   actorFields : ActorFields
+  /-- §8 says "index files contain no frontmatter", excepting `okf_version` at
+  the root, with no keyword attached (`docs/findings.md`, 2026-10-26). Whether
+  an index file with other frontmatter is non-conformant. -/
+  indexFrontmatter : Force
   deriving DecidableEq, Repr
 
 end Okf.V0_2

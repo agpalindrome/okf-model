@@ -77,6 +77,19 @@ the spec never names a YAML schema, and modelling that resolution is parse
 work below the trust boundary. The price is that `type: 42` and `type: "42"`
 are one value here, so if the spec ever cares about the difference, this is
 where the model cannot see it.
+
+## A file's kind follows from its path (revised at §8)
+
+§2 made `Bundle` a map from path to `Concept`. §3.1 says reserved filenames
+"have defined meaning at any level of the hierarchy" and "all other `.md` files
+are concept documents": the filename decides what a file is. §8 then gives
+`index.md` content of its own. So the map is from path to `Document`, the
+frontmatter-and-body pair every markdown file is, and `Okf.V0_2.Structure`
+defines `Bundle.concepts` and `Bundle.indexes` as filters on the path. A clause
+about concepts quantifies over `concepts`.
+
+The §3 module once carried a clause forbidding a `Concept` at a reserved path.
+It went with this revision; `Okf.V0_2.Structure` says why.
 -/
 
 namespace Okf.V0_2
@@ -125,28 +138,31 @@ here; extracting it from text is the parse step `docs/scope-and-stance.md`
 puts below the trust boundary. -/
 abbrev Body := String
 
-/-- A single unit of knowledge: one markdown document, split into its two
-parts.
+/-- One markdown file in the bundle, split into its two parts. Which kind of
+file it is, a concept or one of §3.1's reserved files, follows from its path
+and is not recorded here.
 
 The split is an input to the model, not something it performs. A `Bundle`
 is post-parse — reaching it from a directory of markdown is exactly the work
 `docs/scope-and-stance.md` declines to verify. -/
-structure Concept where
+structure Document where
   frontmatter : Frontmatter
   body : Body
 
-/-- §2's "self-contained, hierarchical collection of knowledge documents"; the
-unit of distribution.
+/-- §2's single unit of knowledge: a `Document` at a path §3.1 does not reserve.
+The name is kept for the §2 term; the type carries nothing the path does not,
+so the clauses that apply to concepts quantify over `Bundle.concepts`. -/
+abbrev Concept := Document
 
-Narrower than that definition: it holds concept documents only. §3.1 puts
-`index.md` and `log.md` in the tree and outside the concepts, and §8 and §9
-give them content, so the carrier is reopened there.
+/-- §2's "self-contained, hierarchical collection of knowledge documents"; the
+unit of distribution. Every `.md` file in the tree, concepts and §3.1's
+reserved files alike; `Okf.V0_2.Structure` tells them apart by path.
 
 The `uniquePaths` field is the commitment the module docstring records, made
 visible rather than hidden inside a map type: it is what makes this a map and
 not a list of pairs. -/
 structure Bundle where
-  entries : List (Path × Concept)
+  entries : List (Path × Document)
   uniquePaths : (entries.map Prod.fst).Nodup
 
 /-- A concept's identity: its path with the `.md` suffix removed.

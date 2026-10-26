@@ -1,4 +1,4 @@
-import Okf.V0_2.Basic
+import Okf.V0_2.Structure
 
 /-!
 # §4 Concept documents — the second clause, and the first gap
@@ -55,16 +55,17 @@ namespace Okf.V0_2
 
 /-- §4.1 REQUIRED: the concept's frontmatter carries a `type` key. Only
 presence; what the value is belongs to `Frontmatter.statedTypesHold`. -/
-def Concept.hasType (c : Concept) : Bool :=
-  (c.frontmatter.get? "type").isSome
+def Document.hasType (d : Document) : Bool :=
+  (d.frontmatter.get? "type").isSome
 
-/-- The second clause: every concept in the bundle carries `type`. -/
+/-- The second clause: every concept in the bundle carries `type`. Over
+`Bundle.concepts`: §8's index files have no `type`, and are not concepts. -/
 def Bundle.allHaveType (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.hasType
+  b.concepts.all fun e => e.2.hasType
 
 /-- The `Prop` reading of `Bundle.allHaveType`. -/
 def Bundle.AllHaveType (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.hasType = true
+  ∀ e ∈ b.concepts, e.2.hasType = true
 
 theorem Bundle.allHaveType_iff (b : Bundle) :
     b.allHaveType = true ↔ b.AllHaveType := by
@@ -100,11 +101,11 @@ def Frontmatter.statedTypesHold (f : Frontmatter) : Bool :=
 
 /-- The strict reading over a whole bundle. -/
 def Bundle.statedTypesHold (b : Bundle) : Bool :=
-  b.entries.all fun e => e.2.frontmatter.statedTypesHold
+  b.concepts.all fun e => e.2.frontmatter.statedTypesHold
 
 /-- The `Prop` reading of `Bundle.statedTypesHold`. -/
 def Bundle.StatedTypesHold (b : Bundle) : Prop :=
-  ∀ e ∈ b.entries, e.2.frontmatter.statedTypesHold = true
+  ∀ e ∈ b.concepts, e.2.frontmatter.statedTypesHold = true
 
 theorem Bundle.statedTypesHold_iff (b : Bundle) :
     b.statedTypesHold = true ↔ b.StatedTypesHold := by
