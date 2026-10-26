@@ -281,7 +281,8 @@ non-`human:` actor rather than a malformed one.
 okf-graph's own point, with a third: an actor carrying both separators, which
 okf-graph splits at the slash first. okf-tools#148 (2026-10-26) drops the
 character set and the slash-first split and keeps the miscased `human:` as a
-`Report`, CONCEPT-17.
+`Report`, CONCEPT-17; okf-graph 0.9.0 (okf-tools#150, `b8324ed`, 2026-10-26)
+is the release that carries it.
 
 **The question for upstream.** Do the three forms in §7 bind, and if so, is
 `team:<id>` in §5.1's example an error in the example or a fourth form missing
@@ -475,7 +476,8 @@ defines no section structure, so the model's extent is a recorded pick, not a
 reading; `Okf.V0_2.subheadingSection_conformant_okfGraph` witnesses a `##`
 subheading inside the section conforming at okf-graph's own point. okf-graph
 took that extent in okf-tools#149 (2026-10-26, `12dda79`), so the two agree on
-every witness in `Okf.V0_2.OkfGraph`.
+every witness in `Okf.V0_2.OkfGraph`. okf-graph 0.9.0 (okf-tools#150,
+`b8324ed`, 2026-10-26) is the release that carries both.
 
 **The question for upstream.** Does an indented code block under
 `# Computation` satisfy §10.3, or should the §10.2 example use a fence?
