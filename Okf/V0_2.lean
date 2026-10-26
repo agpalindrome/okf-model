@@ -3,7 +3,7 @@ import Okf.V0_2.Basic
 /-!
 # OKF v0.2
 
-The Open Knowledge Format, at one revision: the `okf/SPEC.md` commit pinned in
+The Open Knowledge Format, at one revision: the `SPEC.md` commit pinned in
 `docs/pinned-revision.md`, whose preamble declares **Version 0.2**.
 
 The namespace is named for the declared version, because that is what a reader
