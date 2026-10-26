@@ -57,8 +57,9 @@ spaces as the same heading and behind four as code, and the exact-line match
 takes no side on the first case (okf-tools#147, 2026-10-26). Markdown defines
 no section structure, so where "under `# Computation`" ends is an outline
 convention: here the section runs to the next level-one heading, so a `##`
-heading stays inside it. That is a pick, recorded; okf-graph ends the section
-at a heading of any level, which `Okf.V0_2.OkfGraph` witnesses.
+heading stays inside it. That is a pick, recorded; okf-graph 0.8.0 ended the
+section at a heading of any level, which `Okf.V0_2.OkfGraph` witnesses, and
+okf-tools#149 took this extent.
 `docs/findings.md`, 2026-10-26, "§10.3 says fenced, and §10.2's example is
 indented".
 
