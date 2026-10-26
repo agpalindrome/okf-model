@@ -89,3 +89,33 @@ a date to a datetime a minor or a major change, and should it have moved the
 declared version?
 
 **Not raised upstream** (2026-09-21). Filing is the owner's call.
+
+## 2026-10-26 — §3 does not say what a non-markdown file in the tree is
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: none — `Bundle` holds concept documents only, so the bundle that would
+separate the readings is unrepresentable. Widening the carrier to hold files
+the text never names was declined as modelling the worry rather than the text.
+
+§3 opens "A bundle is a directory tree of markdown files." §3.1 reserves two
+filenames and closes "All other `.md` files are concept documents." §2 defines
+a Concept ID as the concept's path "with the `.md` suffix removed". None of the
+three says what a regular file without the `.md` suffix is when it sits in the
+tree: not part of the bundle, part of it and ignored, or a conformance failure.
+
+The readings separate on a bundle containing one `.txt` beside its concepts:
+ignored, it conforms; forbidden, it does not. The in-flight upstream PR on
+§3.2 (`docs/pinned-revision.md`) defines a conformance corpus of "regular `.md`
+file entries", which would answer the question at a later pin.
+
+**What the model does.** `Okf.V0_2.conceptId` returns `none` for a path not
+ending in `.md` rather than passing it through, and `Bundle` cannot hold such a
+file. No `Policy` field, for the reason the witness line gives; if the carrier
+is ever widened, the two readings become one.
+
+**The question for upstream.** Is a regular file in the tree whose name does
+not end in `.md` outside the bundle, inside it and ignored, or a conformance
+failure?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call, and §3.2 may
+settle it first.

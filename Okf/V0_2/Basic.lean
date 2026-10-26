@@ -97,7 +97,12 @@ structure Concept where
   body : Body
   deriving DecidableEq, Repr
 
-/-- A self-contained collection of concept documents; the unit of distribution.
+/-- §2's "self-contained, hierarchical collection of knowledge documents"; the
+unit of distribution.
+
+Narrower than that definition: it holds concept documents only. §3.1 puts
+`index.md` and `log.md` in the tree and outside the concepts, and §8 and §9
+give them content, so the carrier is reopened there.
 
 The `uniquePaths` field is the commitment the module docstring records, made
 visible rather than hidden inside a map type: it is what makes this a map and
@@ -111,7 +116,8 @@ structure Bundle where
 `Option` because §2's definition presupposes a path ending in `.md` and does
 not say what a file failing that is. Answering — by stripping when present and
 passing the path through otherwise — would be deciding whether a non-markdown
-file can be a concept, which §2 leaves to §3. -/
+file can be a concept, which neither §2 nor §3 settles (`docs/findings.md`,
+2026-10-26). -/
 def conceptId (p : Path) : Option Path :=
   match p.reverse with
   | [] => none
