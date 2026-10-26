@@ -16,7 +16,8 @@ not follow. The §5.1 footnote join, which §10.2's example demonstrates, is in
 §10.2: `runtime` is "REQUIRED for this type". The type is the scalar
 `Attested Computation`, matched exactly, a commitment like `Index.md` in
 `Okf.V0_2.Structure`. §4.1 said type values are not registered; this one the
-spec fixes by name.
+spec fixes by name. Under §11 the REQUIRED is guidance, so the clause is gated
+by `Policy.familyClauses` with §5's two.
 
 ## The gap: `executor` and `attester` are unmarked
 
@@ -83,7 +84,9 @@ passes. -/
 def Document.runtimeIfAttested (d : Document) : Bool :=
   !d.isAttestedComputation || d.frontmatter.hasKey "runtime"
 
-/-- The fifth clause: every Attested Computation carries `runtime`. -/
+/-- §10.2's clause: every Attested Computation carries `runtime`. Gated by
+`Policy.familyClauses`: §11 lists it among neither of its conditions and makes
+§10 a SHOULD. -/
 def Bundle.attestedHaveRuntime (b : Bundle) : Bool :=
   b.concepts.all fun e => e.2.runtimeIfAttested
 

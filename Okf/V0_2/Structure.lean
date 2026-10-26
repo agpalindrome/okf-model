@@ -49,7 +49,9 @@ already carries from §2, and §3 was the section that should have answered it.
 It is recorded in `docs/findings.md` (2026-10-26). It gets no `Policy` field
 because the carrier cannot represent the separating bundle, and widening the
 carrier to hold files the text never names would model our worry rather than
-the text. Upstream's pending §3.2 corpus definition would settle it.
+the text. Upstream's pending §3.2 corpus definition would settle it. The
+question is live in the text's own example: Appendix A's tree lists two `.py`
+files (`Okf.V0_2.AppendixA`).
 
 ## One commitment, recorded
 
