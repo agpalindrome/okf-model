@@ -90,7 +90,8 @@ def isIsoDate (s : String) : Bool :=
 def Document.logDatesIso (d : Document) : Bool :=
   d.body.dateHeadings.all isIsoDate
 
-/-- The fourth clause: every log's date headings have the form. -/
+/-- §9's clause: every log's date headings have the form. Unconditional, since
+§11.3 binds "the structure in §9". -/
 def Bundle.logDatesIso (b : Bundle) : Bool :=
   b.logs.all fun e => e.2.logDatesIso
 

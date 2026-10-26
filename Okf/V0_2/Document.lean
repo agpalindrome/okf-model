@@ -2,14 +2,14 @@ import Okf.V0_2.Structure
 import Okf.V0_2.Policy
 
 /-!
-# §4 Concept documents — the second clause, and the first gap
+# §4 Concept documents — the type clause, and the first gap
 
 §4 is where the model's mechanism first gets exercised. It reopens
-`Frontmatter` (the revision is in `Okf.V0_2.Basic`), states the second
-conformance clause, and states value types for its keys without saying whether
-they bind. This module holds the clause and the two readings of those types;
-`Okf.V0_2.Policy` holds the field that chooses between them, and
-`Okf.V0_2.Conformance` assembles the clauses.
+`Frontmatter` (the revision is in `Okf.V0_2.Basic`), gives the one clause §11
+keeps unconditional for concepts, that every one carries a `type`, and states
+value types for its keys without saying whether they bind. This module holds
+the clause and the two readings of those types; `Okf.V0_2.Policy` holds the
+fields that choose, and `Okf.V0_2.Conformance` assembles the clauses.
 
 ## The clause: `type` is present and non-empty, in the blocks §11.2 reaches
 
@@ -52,8 +52,10 @@ UTF-8 and the `---` delimiters are bytes. The four "Recommended" keys are a
 heading, not RFC 2119 RECOMMENDED, and §4.1 itself says a concept with only
 `type` is fully conformant, so their presence is no clause. §4.2 says there are
 no required body sections and its heading conventions are SHOULDs "when
-applicable", which is not checkable, so `Body` stays `String`. Footnotes defer
-to §5.1. Extensions MAY appear, so an unknown key is nothing to check.
+applicable", which is not checkable. `Body` stays `String`; where a later
+section states a rule over body text, §9, §10 and §5.1's footnotes, it is read
+line by line and never parsed as markdown. Extensions MAY appear, so an unknown
+key is nothing to check.
 -/
 
 namespace Okf.V0_2
@@ -71,7 +73,7 @@ def Document.hasNonEmptyType (d : Document) : Bool :=
   | some v => v.nonEmpty
   | none => false
 
-/-- The second clause, under reading `scope`. `conceptsOnly`: every concept
+/-- §4.1 and §11.2's clause, under reading `scope`. `conceptsOnly`: every concept
 carries a non-empty `type`. `everyBlock`: so does every reserved file whose
 frontmatter is not empty. -/
 def Bundle.typedBlocks (b : Bundle) : TypeScope → Bool

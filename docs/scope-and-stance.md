@@ -30,7 +30,9 @@ permissively. The model testifies that the standard itself did not decide.
 ### How a gap is represented
 
 Conformance is **parameterized over an explicit policy record whose fields are
-exactly the spec's open choices**:
+exactly the spec's open choices**. This is the sketch written before any Lean,
+kept as written; the record itself is `Okf/V0_2/Policy.lean`, with eleven
+fields after the first pass (2026-10-26):
 
 ```lean
 structure Policy where
@@ -40,6 +42,13 @@ structure Policy where
   logOrdering : Force          -- §9 "newest first" — required, or convention
   -- one field per gap; adding a field is how a new gap enters the model
 ```
+
+Three of the four landed under their sketched names; `actorForm` and
+`inlineComp` as three-valued, because the text supports a reading under which
+neither binds at all. `scopeMarker` did not materialize: §5.1's scope descriptor
+is free prose the model does not read, and §6.2's three accepted path forms
+have no complement, so there was no second reading to separate
+(`Okf/V0_2/Links.lean`).
 
 Two theorem shapes carry the stance, and every gap gets both where it can:
 
@@ -51,7 +60,9 @@ Two theorem shapes carry the stance, and every gap gets both where it can:
 `okf-graph`'s actual behaviour is then a named value, `okfGraphPolicy`, so its
 permissiveness is auditable in one place instead of inferred from `if`
 statements — the "enumerable rather than implicit" property the okf-stack board
-asks of the graph layer.
+asks of the graph layer. It does not exist yet: writing it means reading
+`okf-graph`'s behaviour against each of the eleven fields, which is its own
+pass.
 
 **Rejected: three-valued conformance** (`yes` / `no` / `undetermined`). It looks
 like the honest encoding and is not. It bakes a judgment about *which* clauses

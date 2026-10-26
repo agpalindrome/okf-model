@@ -9,6 +9,11 @@ import Okf.V0_2.Document
 two clauses, one new `Policy` field, and the existing `fieldTypes` field
 widened to §5's shapes.
 
+Both clauses are gated. §11 defines conformance by three conditions, neither
+of these among them, and says producers "SHOULD follow §5 through §10"; under
+§11 these REQUIREDs are guidance. `Policy.familyClauses` holds the choice, and
+`Okf.V0_2.Conformance` says more.
+
 ## Entries of a value that is not what §5 describes
 
 Both clauses quantify over entries: of `sources`, and of `verified`. When the
@@ -71,11 +76,11 @@ source that is itself a concept, MUST treat a bare `verified` mapping as a
 one-element list, MUST NOT reject a concept with no trust frontmatter, derive
 tiers, and apply the `status` default. As in §4, listed and not modelled.
 
-## Noted for §7
+## `author: team:ga4-docs`, read at §7
 
-§5.1's example writes `author: team:ga4-docs`, which is none of the three actor
-conventions §2 names. That is §7's business and the example is its witness from
-the text; nothing here reads `author`.
+§5.1's example writes an actor in none of the three conventions §2 names.
+Nothing here reads `author`; `Okf.V0_2.Actors` does, and that example became
+the witness from the text for two §7 gaps, with Appendix A repeating it twice.
 -/
 
 namespace Okf.V0_2
@@ -113,7 +118,8 @@ def Value.verifiedEvents : Value → List Value
 def Frontmatter.sourcesHaveResource (f : Frontmatter) : Bool :=
   f.keyHolds "sources" fun v => v.items.all fun e => e.hasKey "resource"
 
-/-- The third clause: every `sources` entry in the bundle carries `resource`. -/
+/-- §5.1's clause: every `sources` entry in the bundle carries `resource`.
+Gated by `Policy.familyClauses`. -/
 def Bundle.sourcesHaveResource (b : Bundle) : Bool :=
   b.concepts.all fun e => e.2.frontmatter.sourcesHaveResource
 
@@ -129,7 +135,8 @@ theorem Bundle.sourcesHaveResource_iff (b : Bundle) :
 def Frontmatter.generatedHasBy (f : Frontmatter) : Bool :=
   f.keyHolds "generated" fun v => v.hasKey "by"
 
-/-- The fourth clause: every `generated` in the bundle carries `by`. -/
+/-- §5.2's clause: every `generated` in the bundle carries `by`. Gated by
+`Policy.familyClauses`. -/
 def Bundle.generatedHasBy (b : Bundle) : Bool :=
   b.concepts.all fun e => e.2.frontmatter.generatedHasBy
 
