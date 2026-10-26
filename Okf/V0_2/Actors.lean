@@ -49,11 +49,12 @@ not. Under a constraining form a non-scalar `by` fails, since a mapping is not
 an actor string in any reading; under `unconstrained` nothing is checked, and
 the scalar question stays with `fieldTypes`.
 
-Two more things okf-graph checks are not readings of §7 and are not here: a
-scheme drawn from ASCII letters, digits, `_` and `-`, and `Human:` or `HUMAN:`
-rejected as a miscased `human:`. §7 says nothing about a scheme's characters,
-and §5.3 makes a miscased prefix a non-`human:` actor, not a malformed one.
-`Okf.V0_2.OkfGraph` witnesses both as conformant at okf-graph's own policy.
+Two more things okf-graph 0.8.0 checked are not readings of §7 and are not
+here: a scheme drawn from ASCII letters, digits, `_` and `-`, and `Human:` or
+`HUMAN:` rejected as a miscased `human:`. §7 says nothing about a scheme's
+characters, and §5.3 makes a miscased prefix a non-`human:` actor, not a
+malformed one. `Okf.V0_2.OkfGraph` witnesses both as conformant at okf-graph's
+own policy; okf-tools#148 drops the first and keeps the second as a `Report`.
 -/
 
 namespace Okf.V0_2
