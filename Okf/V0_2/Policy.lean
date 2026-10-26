@@ -23,12 +23,18 @@ inductive Force where
   | convention
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §4. -/
+/-- The spec's open choices, as of §5. -/
 structure Policy where
-  /-- §4.1 describes value types for its five named keys with no keyword
-  attached (`docs/findings.md`, 2026-10-26). Whether a concept violating one is
-  non-conformant. -/
+  /-- §4.1 describes value types for its five named keys, and §5 describes the
+  shapes of its families and the three values of `status`, with no keyword
+  attached (`docs/findings.md`, 2026-10-26, two entries). Whether a concept
+  violating one is non-conformant. One field for both sections: the same
+  editorial habit, and a second field would separate nothing new. -/
   fieldTypes : Force
+  /-- §5.2 marks `generated.by` REQUIRED and marks nothing within a `verified`
+  event, which §5.3 then computes on (`docs/findings.md`, 2026-10-26). Whether
+  an event without `by` and `at` is non-conformant. -/
+  verifiedEntryKeys : Force
   deriving DecidableEq, Repr
 
 end Okf.V0_2
