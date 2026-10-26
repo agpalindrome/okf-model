@@ -279,7 +279,9 @@ enter: a scheme limited to ASCII letters, digits, `_` and `-`, and a miscased
 non-`human:` actor rather than a malformed one.
 `Okf.V0_2.actorDefects_conformant_okfGraph` shows both conformant at
 okf-graph's own point, with a third: an actor carrying both separators, which
-okf-graph splits at the slash first.
+okf-graph splits at the slash first. okf-tools#148 (2026-10-26) drops the
+character set and the slash-first split and keeps the miscased `human:` as a
+`Report`, CONCEPT-17.
 
 **The question for upstream.** Do the three forms in §7 bind, and if so, is
 `team:<id>` in §5.1's example an error in the example or a fourth form missing
@@ -455,11 +457,24 @@ a defect and asks nothing of the block's style, a reading the three values did
 not express: `unconstrained` waives the count too. "Fenced" describes a block
 and "one of two ways" counts them, so the text supports it, and `anySection`
 entered; an empty section is no block of any style and does not count, which
-is okf-graph's CONCEPT-11. okf-graph also accepts a `Computation` heading at
-any level and with leading whitespace, where §10.3 says `# Computation`; that
-is not a reading and did not enter.
+is okf-graph's CONCEPT-11. okf-graph 0.8.0 also accepted a `Computation`
+heading at any level and behind leading whitespace, where §10.3 says
+`# Computation`; that is not a reading and did not enter.
 `Okf.V0_2.headingAcceptances_rejected_okfGraph` rejects both at okf-graph's
 own point.
+
+**Revised against okf-tools#148 (2026-10-26).** okf-graph took the level-one
+heading, and its reply corrected the second witness: it stood at one space,
+which CommonMark reads as the same heading, and the model's exact-line match is
+an approximation, not a reading of §10.3. §4.2's "standard markdown" names no
+dialect. The witness now stands at four spaces, a code block in every dialect,
+and `Okf.V0_2.Computation` says the match takes no side on one to three. The
+reply also found a sixth difference: okf-graph ends the section at a heading
+of any level and the model at the next level-one heading. Markdown defines no
+section structure, so the model's extent is a recorded pick, not a reading;
+`Okf.V0_2.subheadingSection_conformant_okfGraph` witnesses a `##` subheading
+inside the section conforming at okf-graph's own point, which okf-graph reads
+as its own to loosen.
 
 **The question for upstream.** Does an indented code block under
 `# Computation` satisfy §10.3, or should the §10.2 example use a fence?

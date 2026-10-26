@@ -47,11 +47,18 @@ style, so it does not count: that is okf-graph's reading too.
 
 The body is read as §9 reads it, by lines. The `# Computation` section is the
 lines after a line that is exactly `# Computation`, up to the next line
-opening `# `. §10.3 names that heading, so a `## Computation` is not it;
-okf-graph accepts a heading at any level, which `Okf.V0_2.OkfGraph` records as
-a divergence the text does not support. A fence is a line opening with three backticks or three tildes;
-an indented block is a line opening with four spaces or a tab and carrying
-more than that. The same approximation of markdown as `Okf.V0_2.Log` records.
+opening `# `. §10.3 names that heading, so a `## Computation` is not it. A
+fence is a line opening with three backticks or three tildes; an indented
+block is a line opening with four spaces or a tab and carrying more than that.
+The same approximation of markdown as `Okf.V0_2.Log` records, with two of its
+edges stated so that no witness rests on them. §4.2 says the body is "standard
+markdown" and names no dialect; CommonMark reads a `#` behind one to three
+spaces as the same heading and behind four as code, and the exact-line match
+takes no side on the first case (okf-tools#147, 2026-10-26). Markdown defines
+no section structure, so where "under `# Computation`" ends is an outline
+convention: here the section runs to the next level-one heading, so a `##`
+heading stays inside it. That is a pick, recorded; okf-graph ends the section
+at a heading of any level, which `Okf.V0_2.OkfGraph` witnesses.
 `docs/findings.md`, 2026-10-26, "§10.3 says fenced, and §10.2's example is
 indented".
 
