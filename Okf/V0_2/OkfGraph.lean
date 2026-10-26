@@ -39,12 +39,12 @@ model accepts: a scheme with a character outside ASCII letters, digits, `_` and
 which okf-graph split at the slash first and the model at either. Two were
 acceptances of bundles the model rejects: a `Computation` heading at a level
 other than one, and a heading behind leading whitespace. Filed as
-okf-tools#147 (2026-10-26) and taken in okf-tools#148 (head `e6d6f1b`, open as
-this is written): the character set and the slash-first split are dropped,
-since no text stood behind them even as reports; a miscased `human:` is
-CONCEPT-17, a `Report`; and the heading matcher is level one only, read as
-CommonMark reads an ATX heading. The witnesses stay as the record of what the
-point says.
+okf-tools#147 (2026-10-26) and taken in okf-tools#148 (squash `3623e16`; its
+branch head `e6d6f1b` is not in that history): the character set and the
+slash-first split are dropped, since no text stood behind them even as
+reports; a miscased `human:` is CONCEPT-17, a `Report`; and the heading
+matcher is level one only, read as CommonMark reads an ATX heading. The
+witnesses stay as the record of what the point says.
 
 One witness was wrong by three spaces. The filing put one space before
 `# Computation` and called the model's rejection a reading of §10.3. CommonMark
@@ -53,12 +53,13 @@ is an approximation, which `Okf.V0_2.Computation` now says. The witness stands
 at four spaces, which CommonMark makes a code block, so no dialect reads it as
 a heading.
 
-A sixth difference came back in the same reply. okf-graph ends the section at
-the next heading of any level and the model at the next level-one heading, so
-a subheading inside the section is CONCEPT-11 there and conformant here.
-Markdown defines no section structure, so `Okf.V0_2.Computation` records the
-model's extent as a pick, and `levelTwoSubheading` witnesses it. okf-tools
-reads the loosening as its own.
+A sixth difference came back in the same reply. okf-graph 0.8.0 ended the
+section at the next heading of any level and the model at the next level-one
+heading, so a subheading inside the section was CONCEPT-11 there and conformant
+here. Markdown defines no section structure, so `Okf.V0_2.Computation` records
+the model's extent as a pick, and `levelTwoSubheading` witnesses it. okf-graph
+took the model's extent in okf-tools#149 (`12dda79`), so the witness now draws
+nothing there either.
 -/
 
 namespace Okf.V0_2
@@ -205,8 +206,9 @@ theorem headingAcceptances_rejected_okfGraph :
 
 /-- A `## Notes` subheading inside the `# Computation` section, with the block
 below it. The model's section runs to the next level-one heading, so the block
-is inside; okf-graph ends the section at any heading and finds it empty,
-CONCEPT-11 (`has_empty_computation_section`, `concept.rs`). -/
+is inside. okf-graph 0.8.0 ended the section at any heading and found it empty,
+CONCEPT-11 (`has_empty_computation_section`, `concept.rs`); from okf-tools#149
+it runs to the next level-one heading too. -/
 def levelTwoSubheading : Bundle :=
   ⟨[(["c.md"],
      ⟨⟨[("type", .scalar "Attested Computation"), ("runtime", .scalar "bigquery")], by simp⟩,

@@ -469,12 +469,13 @@ which CommonMark reads as the same heading, and the model's exact-line match is
 an approximation, not a reading of §10.3. §4.2's "standard markdown" names no
 dialect. The witness now stands at four spaces, a code block in every dialect,
 and `Okf.V0_2.Computation` says the match takes no side on one to three. The
-reply also found a sixth difference: okf-graph ends the section at a heading
-of any level and the model at the next level-one heading. Markdown defines no
-section structure, so the model's extent is a recorded pick, not a reading;
-`Okf.V0_2.subheadingSection_conformant_okfGraph` witnesses a `##` subheading
-inside the section conforming at okf-graph's own point, which okf-graph reads
-as its own to loosen.
+reply also found a sixth difference: okf-graph 0.8.0 ended the section at a
+heading of any level and the model at the next level-one heading. Markdown
+defines no section structure, so the model's extent is a recorded pick, not a
+reading; `Okf.V0_2.subheadingSection_conformant_okfGraph` witnesses a `##`
+subheading inside the section conforming at okf-graph's own point. okf-graph
+took that extent in okf-tools#149 (2026-10-26, `12dda79`), so the two agree on
+every witness in `Okf.V0_2.OkfGraph`.
 
 **The question for upstream.** Does an indented code block under
 `# Computation` satisfy §10.3, or should the §10.2 example use a fence?
