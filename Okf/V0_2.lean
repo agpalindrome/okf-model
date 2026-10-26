@@ -6,6 +6,8 @@ import Okf.V0_2.Links
 import Okf.V0_2.Actors
 import Okf.V0_2.Index
 import Okf.V0_2.Log
+import Okf.V0_2.Computation
+import Okf.V0_2.Footnotes
 import Okf.V0_2.Policy
 import Okf.V0_2.Conformance
 

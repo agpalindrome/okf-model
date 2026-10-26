@@ -324,3 +324,91 @@ markdown rather than a parse.
 as the date form is, or a description of the example?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §10.2 marks `executor` and `attester` neither required nor optional
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.contractFields_separates`, invented
+
+§10.2 lists what an Attested Computation concept carries. `runtime` is
+"REQUIRED for this type". `computation` is "Optional". `parameters`,
+`executor` and `attester` carry neither word. §10.5's informative walk-through
+cannot execute without `executor` or attest without `attester`, and §10.1 says
+"a single `attester`" describes one computation.
+
+So an Attested Computation with `runtime` and a `computation` path and nothing
+else conforms if the unmarked fields are optional and not if the marking of
+`runtime` and `computation` was exhaustive and the rest are required.
+
+**What the model does.** `Policy.contractFields : Force`. The strict reading,
+`Document.contractComplete`, requires `executor` and `attester` on a concept of
+that type. `parameters` is left out of it, because an empty list and an absent
+key cannot be told apart in intent and §10.5 runs with none declared; that is a
+pick inside the strict reading, recorded in `Okf.V0_2.Computation`.
+
+**The question for upstream.** Are `executor` and `attester` required for an
+Attested Computation, as `runtime` is?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §10.3 says fenced, and §10.2's example is indented
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.inlineComp_separates` and
+`Okf.V0_2.section10Examples_rejected`, both from the spec's own §10.2 example;
+`Okf.V0_2.Gaps.inlineComp_separates_unconstrained`, invented
+
+§10.3 says to "provide the computation in one of two ways": inline, as "a
+single fenced code block in the body under `# Computation`", or as a file named
+by `computation` with the body fence omitted. The sentence carries no keyword.
+§10.2's own example gives its computation under `# Computation` as a block
+indented four spaces, with no fence and no `computation` key.
+
+Under the text's own words the example provides its computation neither way.
+Under a reading that admits the indented block, which markdown treats as a
+code block too, it provides it inline. Under a reading of the sentence as
+description, nothing is checked.
+
+**What the model does.** `Policy.inlineComp : InlineCompForm` with
+`fencedOnly`, `fencedOrIndented` and `unconstrained`, the second field
+`docs/scope-and-stance.md` sketched before any Lean existed. The strict
+readings require exactly one of the key and a body block, since "one of two
+ways" and "omit the body fence" read as exclusive; "single" is not counted.
+The body is read by lines, as `Okf.V0_2.Log` reads it, and
+`Okf.V0_2.Computation` records the approximation. `section10Examples_rejected`
+is the stance document's scenario a second time: the spec's own example fails
+the spec's own rule.
+
+**The question for upstream.** Does an indented code block under
+`# Computation` satisfy §10.3, or should the §10.2 example use a fence?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §5.1 keys footnotes to `sources[].id` without force
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.footnoteLabels_separates`, invented; §10.2's example is
+the positive case
+
+§5.1 says: "To attribute a specific claim, use a markdown footnote whose label
+is a `sources[].id`", and "The footnote label is the join key into `sources`;
+consumers resolve attribution through the matching entry". It also says `id`
+"SHOULD be present when the body cites the source". No keyword attaches to the
+join. §10.2's example demonstrates it, with `[^rev-policy]` and
+`id: rev-policy`.
+
+A footnote definition whose label names no `sources[].id` is a claim with no
+resolvable attribution. It conforms if the join is description and not if it
+binds.
+
+**What the model does.** `Policy.footnoteLabels : Force`. The strict reading,
+`Document.footnotesJoined`, requires every footnote definition's label to be
+the `id` of some `sources` entry. Definitions are read by lines, a line opening
+with `[^`; inline references in prose are not read, and the SHOULD on `id`
+presence is not a clause. The entry was parked at §5 and §6 for want of a
+readable `Body`, and `Okf.V0_2.Footnotes` records the route.
+
+**The question for upstream.** Is a footnote definition with no matching
+`sources[].id` a conformance failure?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
