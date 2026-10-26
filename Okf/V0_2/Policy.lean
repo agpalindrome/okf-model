@@ -23,6 +23,20 @@ inductive Force where
   | convention
   deriving DecidableEq, Repr
 
+/-- Whether a constraint under a `Force` field counts: `required` checks it,
+`convention` waives it. `conformant` is written with this so that a theorem
+about every policy needs no case split. -/
+def Force.gate : Force → Bool → Bool
+  | .required, b => b
+  | .convention, _ => true
+
+@[simp] theorem Force.gate_true (f : Force) : f.gate true = true := by
+  cases f <;> rfl
+
+theorem Force.gate_eq_true_iff (f : Force) (b : Bool) :
+    f.gate b = true ↔ (f = .required → b = true) := by
+  cases f <;> simp [Force.gate]
+
 /-- The readings of §7's actor convention. `threeForms` is the text's list;
 `schemeOrSlash` admits any `<scheme>:<id>`, which the spec's own §5.1 example
 needs; `unconstrained` reads the convention as description. -/
@@ -40,7 +54,29 @@ inductive ActorFields where
   | withAuthor
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §9. -/
+/-- Whether `actorForm` reaches `author`, as a gate. -/
+def ActorFields.gate : ActorFields → Bool → Bool
+  | .withAuthor, b => b
+  | .listedOnly, _ => true
+
+@[simp] theorem ActorFields.gate_true (a : ActorFields) : a.gate true = true := by
+  cases a <;> rfl
+
+theorem ActorFields.gate_eq_true_iff (a : ActorFields) (b : Bool) :
+    a.gate b = true ↔ (a = .withAuthor → b = true) := by
+  cases a <;> simp [ActorFields.gate]
+
+/-- The readings of §10.3's inline computation. `fencedOnly` is the text, "a
+single fenced code block"; `fencedOrIndented` also admits the indented block
+§10.2's own example uses; `unconstrained` reads "provide the computation in
+one of two ways" as description. -/
+inductive InlineCompForm where
+  | fencedOnly
+  | fencedOrIndented
+  | unconstrained
+  deriving DecidableEq, Repr
+
+/-- The spec's open choices, as of §10. -/
 structure Policy where
   /-- §4.1 describes value types for its five named keys, and §5 describes the
   shapes of its families and the three values of `status`, with no keyword
@@ -68,6 +104,19 @@ structure Policy where
   2026-10-26). Whether a log whose date headings are out of order is
   non-conformant. The field `docs/scope-and-stance.md` sketched by name. -/
   logOrdering : Force
+  /-- §10.2 marks `runtime` REQUIRED and `computation` Optional, and marks
+  `executor` and `attester` neither way (`docs/findings.md`, 2026-10-26).
+  Whether an Attested Computation without both is non-conformant. -/
+  contractFields : Force
+  /-- §10.3 says the inline computation is "a single fenced code block" and
+  §10.2's example indents it; "provide the computation in one of two ways" has
+  no keyword (`docs/findings.md`, 2026-10-26). The second field
+  `docs/scope-and-stance.md` sketched by name. -/
+  inlineComp : InlineCompForm
+  /-- §5.1 says a claim is attributed by a footnote "whose label is a
+  `sources[].id`", with no keyword (`docs/findings.md`, 2026-10-26). Whether a
+  footnote definition with no matching `id` is non-conformant. -/
+  footnoteLabels : Force
   deriving DecidableEq, Repr
 
 end Okf.V0_2

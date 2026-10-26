@@ -39,10 +39,9 @@ judged that too thin (2026-10-26).
 
 The `references/` subdirectory is "a naming convention, not a requirement".
 
-## Still parked: the footnote join
+## The footnote join went on to §10
 
-§5.1's footnote label as a `sources[].id` join key, and its SHOULD on `id`,
-still wait for a `Body` with structure. §6 was expected to be that section and
-was not. §10 is the next candidate, since §4.2's `# Computation` heading points
-there.
+§5.1's footnote label as a `sources[].id` join key waited here for a `Body`
+with structure, and §6 was not the section that gave one. §9 then read a body
+by lines, and `Okf.V0_2.Footnotes` models the join that way.
 -/
