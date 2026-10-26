@@ -42,9 +42,6 @@ on: `Path` is relative to the bundle root, not to any repository root. How that
 root is found, the spec does not say; upstream's in-flight PR on §3.2 is about
 exactly that (`docs/pinned-revision.md`), so the model takes the root as given.
 
-**`log.md`.** Reserved here, so outside `concepts`; its content is §9's and it
-gets no filter until then.
-
 **Non-markdown files.** §3 says the tree is "of markdown files" and §3.1 scopes
 its rule to `.md`. Neither says what a `.txt` beside them is: ignored,
 forbidden, or part of the bundle. That is the gap `conceptId`'s `Option`
@@ -83,9 +80,17 @@ def Path.isIndex (p : Path) : Bool :=
 def Bundle.concepts (b : Bundle) : List (Path × Document) :=
   b.entries.filter fun e => !e.1.isReserved
 
+/-- Whether a path's file is `log.md`, at any level. -/
+def Path.isLog (p : Path) : Bool :=
+  p.getLast? == some "log.md"
+
 /-- §3.1 and §8: the bundle's index files. -/
 def Bundle.indexes (b : Bundle) : List (Path × Document) :=
   b.entries.filter fun e => e.1.isIndex
+
+/-- §3.1 and §9: the bundle's log files. -/
+def Bundle.logs (b : Bundle) : List (Path × Document) :=
+  b.entries.filter fun e => e.1.isLog
 
 /-- The bundle with no files. §3 does not say whether it is a bundle; it is
 here as the smallest value the clauses can be checked on. -/
@@ -111,6 +116,9 @@ theorem indexAtRoot_indexes : indexAtRoot.indexes = indexAtRoot.entries := rfl
 
 /-- §3.1 reaches every level: `log.md` two directories down is not a concept. -/
 theorem nestedLog_concepts : nestedLog.concepts = [] := by decide
+
+/-- §3.1 and §9: it is a log. -/
+theorem nestedLog_logs : nestedLog.logs = nestedLog.entries := rfl
 
 /-- The commitment the module docstring records: the match is exact, so a file
 named `Index.md` is a concept. -/
