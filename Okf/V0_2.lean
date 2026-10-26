@@ -1,4 +1,5 @@
 import Okf.V0_2.Basic
+import Okf.V0_2.Structure
 
 /-!
 # OKF v0.2
