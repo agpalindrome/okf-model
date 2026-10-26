@@ -204,3 +204,60 @@ syntax was not, being parse work below the trust boundary.
 descriptions in §5, and the three `status` values, normative?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §7's actor forms carry no force, and §5.1 uses a fourth
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.actorForm_separates`, from the spec's own §5.1 example;
+`Okf.V0_2.Gaps.actorForm_separates_unconstrained`, invented
+
+§7 says identity fields "use a single actor convention" and lists three forms:
+`<producer>/<version>`, `human:<id>`, `process:<id>`. No RFC 2119 keyword
+attaches to the list; the section's one MUST is that producers write `human:`
+for hand-authored content, which is a fact about how the content was made and
+not about the string. §5.1's example writes `author: team:ga4-docs`, a scheme
+none of the three forms names.
+
+So the text supports three readings and uses a fourth form itself. The three
+forms bind, and the §5.1 example is wrong where `author` is an actor field. Any
+`<scheme>:<id>` or `<producer>/<version>` is admitted, which the example needs.
+Or the list is description, and any scalar is an actor.
+
+**What the model does.** `Policy.actorForm : ActorForm` with `threeForms`,
+`schemeOrSlash` and `unconstrained`. A separate field from `fieldTypes`, since
+this is string content rather than node kind and has three readings rather than
+two. Prefixes are checked before the slash, as §5.3 reads the string, and
+placeholders are not checked for emptiness. The §7 MUST on `human:` is
+recorded in `Okf.V0_2.Actors` as undecidable from a bundle and is not a clause.
+
+**The question for upstream.** Do the three forms in §7 bind, and if so, is
+`team:<id>` in §5.1's example an error in the example or a fourth form missing
+from §7?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §7 and §5.1 disagree on whether `author` is an actor field
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.actorFields_separates` and
+`Okf.V0_2.section5Examples_rejected`, both from the spec's own §5.1 example
+
+§7 opens "Fields that record an identity (`generated.by`, `verified[].by`) use
+a single actor convention", naming two fields. §5.1 describes `author` as "Who
+or what produced the source, in the actor convention (§7)". §7's own list does
+not include it.
+
+The two readings separate on the spec's own text. Under §7's three forms,
+§5.1's `author: team:ga4-docs` conforms if §7 stops at its list and fails if it
+reaches `author` as §5.1 says. `section5Examples_rejected` is the theorem
+`docs/scope-and-stance.md` described before any Lean existed: a spec whose §7
+rule rejects its own §5.1 example.
+
+**What the model does.** `Policy.actorFields : ActorFields` with `listedOnly`
+and `withAuthor`. It applies whichever `actorForm` is in force to `author` or
+not. The model does not pick.
+
+**The question for upstream.** Is `sources[].author` bound by §7, as §5.1 says
+and §7's list does not?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
