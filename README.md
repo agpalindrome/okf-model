@@ -17,11 +17,16 @@ The model mirrors what the OKF text gives us. It does not drive OKF and does not
 and **where the spec is contradictory or silent the model represents the gap
 rather than resolving it** — adopting a resolution would be driving.
 
-So this model and `okf-graph` may legitimately differ. `okf-graph` has to decide
-something in order to run; the model testifies that the standard itself did not
-decide. Gaps are represented by parameterizing conformance over a `Policy` record
+Gaps are represented by parameterizing conformance over a `Policy` record
 whose fields *are* the spec's open choices, and proving the choices observably
 separate — witnessed, where possible, by the spec's own examples.
+
+`okf-graph` is based on this model. It has to decide something in order to run,
+and what it decides is one point of that record, `okfGraphPolicy`; the model
+testifies that the standard itself did not decide, and stays neutral on which
+point. A difference between the two is therefore either a reading the record
+has yet to express, which grows the record, or a check the text does not
+support, which `okf-graph` drops.
 
 ## What it certifies, and what it does not
 

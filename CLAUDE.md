@@ -18,8 +18,13 @@ The pressure to resolve is strongest exactly where the gap is most annoying, so
 the failure mode looks like helpfulness. If you find yourself writing "the spec
 clearly means X", that is the signal to add a `Policy` field instead.
 
-`okf-graph` differing from this model is **expected**, not a defect in either. It
-must decide something to run; the model must not.
+`okf-graph` is **based on this model**: it must decide something to run, and
+what it decides is one point of `Policy`, named `okfGraphPolicy` in
+`Okf/V0_2/OkfGraph.lean`. The model stays neutral on which point. So a
+difference between the two is not a draw: either `okf-graph` holds a reading of
+the text the record does not yet express, and the record grows, or it checks
+something the text does not support, and that is `okf-graph`'s to drop. The
+text decides which, not either repo (decided 2026-10-26, okf-tools#145).
 
 ## Read against the pin, never against `main`
 

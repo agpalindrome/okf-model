@@ -40,11 +40,20 @@ silently dropped.
 ## Grammar commitments
 
 `human:a/b` has a prefix and a slash. The predicate checks prefixes first,
-which is how §5.3 reads the string. Placeholders are not checked for
-emptiness: `human:` alone passes `threeForms`, as an empty path segment passes
-§3. Under a constraining form a non-scalar `by` fails, since a mapping is not
+which is how §5.3 reads the string. A placeholder names something, so each is
+non-empty: `human:` alone and `/x` pass neither constraining form. The first
+pass left placeholders unchecked, as an empty path segment passes §3; revised
+2026-10-26 against okf-graph (okf-tools#145), which reads `<scheme>:<id>` as
+two non-empty parts, a reading `<id>` supports where `<segment>` in a path did
+not. Under a constraining form a non-scalar `by` fails, since a mapping is not
 an actor string in any reading; under `unconstrained` nothing is checked, and
 the scalar question stays with `fieldTypes`.
+
+Two more things okf-graph checks are not readings of §7 and are not here: a
+scheme drawn from ASCII letters, digits, `_` and `-`, and `Human:` or `HUMAN:`
+rejected as a miscased `human:`. §7 says nothing about a scheme's characters,
+and §5.3 makes a miscased prefix a non-`human:` actor, not a malformed one.
+`Okf.V0_2.OkfGraph` witnesses both as conformant at okf-graph's own policy.
 -/
 
 namespace Okf.V0_2
@@ -58,13 +67,25 @@ def strPrefix (pre s : String) : Bool :=
 def strHas (c : Char) (s : String) : Bool :=
   s.toList.contains c
 
-/-- §7's three forms: a `human:` or `process:` prefix, or a `/`. -/
-def isThreeFormActor (s : String) : Bool :=
-  strPrefix "human:" s || strPrefix "process:" s || strHas '/' s
+/-- `s` begins with `pre` and carries something after it. -/
+def strPrefixThenMore (pre s : String) : Bool :=
+  strPrefix pre s && s.toList.length > pre.toList.length
 
-/-- The open reading: any `<scheme>:<id>` or `<producer>/<version>`. -/
+/-- `s` has `c` with something on both sides of its first occurrence. -/
+def splitsNonEmpty (c : Char) (s : String) : Bool :=
+  match s.toList.span (· != c) with
+  | (left, _ :: right) => !left.isEmpty && !right.isEmpty
+  | _ => false
+
+/-- §7's three forms: `human:<id>`, `process:<id>` or `<producer>/<version>`,
+each placeholder non-empty. -/
+def isThreeFormActor (s : String) : Bool :=
+  strPrefixThenMore "human:" s || strPrefixThenMore "process:" s || splitsNonEmpty '/' s
+
+/-- The open reading: any `<scheme>:<id>` or `<producer>/<version>`, each
+placeholder non-empty. -/
 def isSchemeOrSlashActor (s : String) : Bool :=
-  strHas ':' s || strHas '/' s
+  splitsNonEmpty ':' s || splitsNonEmpty '/' s
 
 /-- Which values a reading admits as an actor. -/
 def ActorForm.accepts : ActorForm → Value → Bool
