@@ -60,6 +60,23 @@ Attested Computation (§10), Executor (§10.2), Receipt (§10), Attester (§10.2
 
 They get no stub types. An empty type would assert that the thing exists and
 has the shape we guessed, which is more than §2 says.
+
+## Frontmatter is a map too (revised at §4)
+
+§2 made `Frontmatter` an empty structure. §4.1 gives it content: YAML key/value
+pairs, one key required, four recommended, any other permitted. A record with a
+`type : String` field would make a concept missing `type` unrepresentable, and
+§4.1's one MUST would then hold by construction where nothing could observe it.
+So the same argument as for `Bundle`: a map from key to `Value`, with the
+clauses as predicates in `Okf.V0_2.Document`.
+
+Two commitments come with it. Keys are unique, which YAML's own mapping rules
+give us and a parser enforces before the model sees anything. And a `Value`
+scalar is its text: YAML resolves `42` to an integer and `"42"` to a string,
+the spec never names a YAML schema, and modelling that resolution is parse
+work below the trust boundary. The price is that `type: 42` and `type: "42"`
+are one value here, so if the spec ever cares about the difference, this is
+where the model cannot see it.
 -/
 
 namespace Okf.V0_2
@@ -71,13 +88,34 @@ Segments rather than a `String`, because §2 fixes no separator; picking one
 here would be picking for the spec. -/
 abbrev Path := List String
 
-/-- The YAML metadata block at the top of a concept document.
+/-- A YAML node as the model sees it after parsing: the three node kinds YAML
+defines, with every scalar carried as its text.
 
-Empty on purpose. §2 says a frontmatter block exists and is YAML; it names not
-one field, so the model has nothing to record. §4.1 is where fields arrive, and
-this structure is where they land. -/
+The YAML data model is a commitment the module docstring records, not a
+reading of the spec, which says "YAML" and no more. -/
+inductive Value where
+  | scalar (text : String)
+  | seq (items : List Value)
+  | map (entries : List (String × Value))
+  deriving Repr
+
+/-- The YAML metadata block at the top of a concept document, as a map from key
+to `Value`.
+
+`uniqueKeys` is YAML's own rule for a mapping, made visible for the same reason
+`Bundle.uniquePaths` is. Which keys mean what is §4.1's business and lives in
+`Okf.V0_2.Document`; this structure only holds them. -/
 structure Frontmatter where
-  deriving DecidableEq, Repr
+  entries : List (String × Value)
+  uniqueKeys : (entries.map Prod.fst).Nodup
+
+/-- The frontmatter with no keys. §4.1 makes it non-conformant, since `type` is
+required; it exists as the smallest value the clauses can be checked on. -/
+def Frontmatter.empty : Frontmatter := ⟨[], List.nodup_nil⟩
+
+/-- The value under a key, if the key is present. -/
+def Frontmatter.get? (f : Frontmatter) (key : String) : Option Value :=
+  f.entries.lookup key
 
 /-- Everything in the concept document after the frontmatter.
 
@@ -95,7 +133,6 @@ is post-parse — reaching it from a directory of markdown is exactly the work
 structure Concept where
   frontmatter : Frontmatter
   body : Body
-  deriving DecidableEq, Repr
 
 /-- §2's "self-contained, hierarchical collection of knowledge documents"; the
 unit of distribution.

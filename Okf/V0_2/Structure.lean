@@ -79,8 +79,9 @@ theorem Bundle.noReservedConcepts_iff (b : Bundle) :
 here as the smallest value the clause can be checked on. -/
 def Bundle.empty : Bundle := ⟨[], List.nodup_nil⟩
 
-/-- A concept with nothing in it, for building witnesses. -/
-def Concept.blank : Concept := ⟨{}, ""⟩
+/-- A concept with nothing in it, for building witnesses. It fails §4.1, which
+is no matter here: §3.1 is a condition on paths. -/
+def Concept.blank : Concept := ⟨Frontmatter.empty, ""⟩
 
 /-- A bundle whose one concept sits at the root as `index.md`. -/
 def indexAsConcept : Bundle := ⟨[(["index.md"], Concept.blank)], by simp⟩

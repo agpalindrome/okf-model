@@ -119,3 +119,34 @@ failure?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call, and §3.2 may
 settle it first.
+
+## 2026-10-26 — §4.1 states value types without saying whether they bind
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.fieldTypes_separates`
+
+§4.1 marks `type` REQUIRED and describes it as "A short string identifying
+the kind of concept". Under **Recommended** it describes `title` as a
+"Human-readable display name", `description` as "A single sentence",
+`resource` as "A URI that uniquely identifies the underlying asset", and `tags`
+as "A YAML list of short strings". No RFC 2119 keyword attaches to any of the
+five descriptions, and §4.1 closes by saying a concept carrying just `type` is
+"fully conformant (§11)", which speaks to presence and not to shape.
+
+So a concept with `tags: sales`, a scalar where a list is described, is
+conformant if the descriptions are conventions and not if they are constraints.
+Every example in §4 is well-typed, so the separating bundle is invented rather
+than the spec's own.
+
+**What the model does.** `Policy.fieldTypes : Force` chooses between the two
+readings. `Frontmatter.statedTypesHold` is the strict reading for the five
+keys, checking node kind only: scalar for four, a sequence of scalars for
+`tags`. "Short", "a single sentence" and URI syntax are not checked, the first
+two because nothing can check them and the third because it is parse work
+below the trust boundary. The model does not pick a value for the field.
+
+**The question for upstream.** Are the value descriptions in §4.1 normative,
+so that a `tags` scalar or a `type` list is non-conformant, or are they
+guidance?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
