@@ -127,10 +127,14 @@ Three properties are deliberate, and each was checked rather than assumed
   runs with `always_run` and no filenames, because pre-commit skips a hook whose
   file list is empty, and the script stops on an empty discovery.
 
-vale is pinned to 3.17.1 from the upstream release rather than taken from
-nixpkgs, which carries 3.15.2 under this lock. The vendored rules were measured
-against 3.17.x; a linter disagreeing with the one its rules were written for
-reports the disagreement as a finding about the prose.
+vale is `pkgs.vale`, the version nixpkgs ships under `flake.lock` — 3.25.1 at
+the 2026-10-26 lock. The owner settled on that version that day, on a
+re-measurement of the vendored rules against it recorded in `vale/README.md`
+in `agpalindrome/claude`: 3.25.1 reports a strict superset of 3.17.1's alerts,
+every extra one a true positive. It replaced a 3.17.1 release binary fetched
+and patched by the flake, which patchelf 0.19.2 corrupts. The version moves
+with the lock, so a vale that disagrees with the rules is re-measured there
+rather than pinned back here.
 
 ### `hook-fallback`, and why a check guards a file nobody here wrote
 

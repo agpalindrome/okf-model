@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Lint authored prose against the vendored house-style rules (`.vale.ini`,
 # `.vale/styles`). Run it from the root of a checkout — the dev shell provides
-# the pinned `vale`, and the flake's `prose` pre-commit hook runs this same
-# file, so a local run and CI cannot diverge.
+# `vale`, and the flake's `prose` pre-commit hook runs this same file, so a
+# local run and CI cannot diverge.
 #
 # The rules are the word-level half of the owner's prose.md. They are vendored
 # by `~/.claude/scripts/sync-vale.sh` rather than referenced: a machine-global
