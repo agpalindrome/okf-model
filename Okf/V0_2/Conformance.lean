@@ -83,7 +83,8 @@ def conformant (p : Policy) (b : Bundle) : Bool :=
   b.typedBlocks p.typeScope
     && p.familyClauses.gate (b.sourcesHaveResource && b.generatedHasBy && b.attestedHaveRuntime)
     && b.logDatesIso
-    && p.fieldTypes.gate (b.statedTypesHold && b.provenanceTypesHold && b.computationTypesHold)
+    && p.fieldTypes.gate (b.statedTypesHold && b.provenanceTypesHold && b.computationTypesHold
+          && b.indexTypesHold)
     && p.verifiedEntryKeys.gate b.verifiedEntriesKeyed
     && b.byActors p.actorForm
     && p.actorFields.gate (b.authorActors p.actorForm)
@@ -100,7 +101,7 @@ def Conformant (p : Policy) (b : Bundle) : Prop :=
         b.SourcesHaveResource ∧ b.GeneratedHasBy ∧ b.AttestedHaveRuntime)
     ∧ b.LogDatesIso
     ∧ (p.fieldTypes = .required →
-        b.StatedTypesHold ∧ b.ProvenanceTypesHold ∧ b.ComputationTypesHold)
+        b.StatedTypesHold ∧ b.ProvenanceTypesHold ∧ b.ComputationTypesHold ∧ b.IndexTypesHold)
     ∧ (p.verifiedEntryKeys = .required → b.VerifiedEntriesKeyed)
     ∧ b.ByActors p.actorForm
     ∧ (p.actorFields = .withAuthor → b.AuthorActors p.actorForm)
@@ -116,6 +117,7 @@ theorem conformant_iff (p : Policy) (b : Bundle) :
     ActorFields.gate_eq_true_iff, Bundle.typedBlocks_iff, Bundle.sourcesHaveResource_iff,
     Bundle.generatedHasBy_iff, Bundle.attestedHaveRuntime_iff, Bundle.logDatesIso_iff,
     Bundle.statedTypesHold_iff, Bundle.provenanceTypesHold_iff, Bundle.computationTypesHold_iff,
+    Bundle.indexTypesHold_iff,
     Bundle.verifiedEntriesKeyed_iff, Bundle.byActors_iff, Bundle.authorActors_iff,
     Bundle.indexFrontmatterClean_iff, Bundle.logNewestFirst_iff, Bundle.contractsComplete_iff,
     Bundle.computationsProvided_iff, Bundle.footnotesJoined_iff, and_assoc]
@@ -310,6 +312,7 @@ structure AllClausesHold (b : Bundle) : Prop where
   statedTypesHold : b.statedTypesHold = true
   provenanceTypesHold : b.provenanceTypesHold = true
   computationTypesHold : b.computationTypesHold = true
+  indexTypesHold : b.indexTypesHold = true
   verifiedEntriesKeyed : b.verifiedEntriesKeyed = true
   byActors : ∀ form, b.byActors form = true
   authorActors : ∀ form, b.authorActors form = true
@@ -323,7 +326,7 @@ theorem conformant_of_allClausesHold {b : Bundle} (h : AllClausesHold b) (p : Po
     conformant p b = true := by
   simp [conformant, h.typedBlocks, h.sourcesHaveResource, h.generatedHasBy,
     h.attestedHaveRuntime, h.logDatesIso, h.statedTypesHold, h.provenanceTypesHold,
-    h.computationTypesHold, h.verifiedEntriesKeyed, h.byActors, h.authorActors,
+    h.computationTypesHold, h.indexTypesHold, h.verifiedEntriesKeyed, h.byActors, h.authorActors,
     h.indexFrontmatterClean, h.logNewestFirst, h.contractsComplete, h.computationsProvided,
     h.footnotesJoined]
 
@@ -333,7 +336,8 @@ theorem section4Examples_conformant (p : Policy) : conformant p section4Examples
     { typedBlocks := by intro s; cases s <;> decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
-      computationTypesHold := by decide, verifiedEntriesKeyed := by decide,
+      computationTypesHold := by decide, indexTypesHold := by decide,
+      verifiedEntriesKeyed := by decide,
       byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
       indexFrontmatterClean := by decide, logNewestFirst := by decide,
       contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,
@@ -345,7 +349,8 @@ theorem typeOnly_conformant (p : Policy) : conformant p typeOnly = true :=
     { typedBlocks := by intro s; cases s <;> decide, sourcesHaveResource := by decide, generatedHasBy := by decide,
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
-      computationTypesHold := by decide, verifiedEntriesKeyed := by decide,
+      computationTypesHold := by decide, indexTypesHold := by decide,
+      verifiedEntriesKeyed := by decide,
       byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
       indexFrontmatterClean := by decide, logNewestFirst := by decide,
       contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,
@@ -368,6 +373,7 @@ theorem section5Examples_conformant (p : Policy)
         ∧ section5Examples.logDatesIso = true ∧ section5Examples.statedTypesHold = true
         ∧ section5Examples.provenanceTypesHold = true
         ∧ section5Examples.computationTypesHold = true
+        ∧ section5Examples.indexTypesHold = true
         ∧ section5Examples.verifiedEntriesKeyed = true
         ∧ section5Examples.indexFrontmatterClean = true
         ∧ section5Examples.logNewestFirst = true ∧ section5Examples.contractsComplete = true
@@ -398,7 +404,7 @@ theorem section9Log_conformant (p : Policy) : conformant p section9Log = true :=
   simp [conformant, hDates, hOrder, hConcepts, hIndexes, hTyped,
     Bundle.sourcesHaveResource, Bundle.generatedHasBy, Bundle.attestedHaveRuntime,
     Bundle.statedTypesHold, Bundle.provenanceTypesHold, Bundle.computationTypesHold,
-    Bundle.verifiedEntriesKeyed, Bundle.byActors, Bundle.authorActors,
+    Bundle.indexTypesHold, Bundle.verifiedEntriesKeyed, Bundle.byActors, Bundle.authorActors,
     Bundle.indexFrontmatterClean, Bundle.contractsComplete, Bundle.computationsProvided,
     Bundle.footnotesJoined]
 
@@ -427,6 +433,7 @@ theorem section10Examples_conformant (p : Policy) (h : p.inlineComp ≠ .fencedO
         ∧ section10Examples.logDatesIso = true ∧ section10Examples.statedTypesHold = true
         ∧ section10Examples.provenanceTypesHold = true
         ∧ section10Examples.computationTypesHold = true
+        ∧ section10Examples.indexTypesHold = true
         ∧ section10Examples.verifiedEntriesKeyed = true
         ∧ section10Examples.indexFrontmatterClean = true
         ∧ section10Examples.logNewestFirst = true
@@ -554,6 +561,18 @@ def indexWithTitle : Bundle :=
 the root only. -/
 def nestedIndexWithVersion : Bundle :=
   ⟨[(["a", "index.md"], ⟨⟨[("okf_version", .scalar "0.2")], by simp⟩, ""⟩)], by simp⟩
+
+/-- A root `index.md` whose `okf_version` is not `<major>.<minor>`. -/
+def wordyVersion : Bundle :=
+  ⟨[(["index.md"], ⟨⟨[("okf_version", .scalar "two")], by simp⟩, ""⟩)], by simp⟩
+
+/-- §12 says revisions are versioned `<major>.<minor>` with no keyword on the
+value's form, so `Policy.fieldTypes` separates on §12 as on §4.1 and §5. Same
+findings as `fieldTypes_separates`. -/
+theorem fieldTypes_separates_on_version :
+    conformant { lax with fieldTypes := .required } wordyVersion
+      ≠ conformant lax wordyVersion := by
+  decide
 
 /-- §8 says index files contain no frontmatter, in the indicative. Read as
 binding, `title:` on an index fails; read as description, it passes. Finding:
@@ -701,6 +720,7 @@ theorem rootIndexWithVersion_conformant (p : Policy) (h : p.typeScope = .concept
         ∧ Gaps.rootIndexWithVersion.statedTypesHold = true
         ∧ Gaps.rootIndexWithVersion.provenanceTypesHold = true
         ∧ Gaps.rootIndexWithVersion.computationTypesHold = true
+        ∧ Gaps.rootIndexWithVersion.indexTypesHold = true
         ∧ Gaps.rootIndexWithVersion.verifiedEntriesKeyed = true
         ∧ Gaps.rootIndexWithVersion.indexFrontmatterClean = true
         ∧ Gaps.rootIndexWithVersion.logNewestFirst = true

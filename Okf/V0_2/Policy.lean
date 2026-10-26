@@ -133,8 +133,9 @@ structure Policy where
   conditions or producer guidance. -/
   familyClauses : Force
   /-- §11.2 says "every frontmatter block"; §8 permits a root `index.md` with
-  `okf_version` and no `type` (`docs/findings.md`, 2026-10-26). Which blocks
-  §11.2 reaches. -/
+  `okf_version` and no `type`, and §12 calls that root block "the only place
+  frontmatter is permitted in an `index.md`" (`docs/findings.md`, 2026-10-26).
+  Which blocks §11.2 reaches. -/
   typeScope : TypeScope
   deriving DecidableEq, Repr
 
