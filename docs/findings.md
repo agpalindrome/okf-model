@@ -113,6 +113,11 @@ ending in `.md` rather than passing it through, and `Bundle` cannot hold such a
 file. No `Policy` field, for the reason the witness line gives; if the carrier
 is ever widened, the two readings become one.
 
+**Revised at §13 (2026-10-26).** Appendix A's own tree lists
+`references/attesters/sql-equality.py` and `dbt-binding.py`. The question is
+live in the text's largest example, and `Okf.V0_2.AppendixA` records that the
+carrier cannot hold them.
+
 **The question for upstream.** Is a regular file in the tree whose name does
 not end in `.md` outside the bundle, inside it and ignored, or a conformance
 failure?
@@ -229,6 +234,10 @@ this is string content rather than node kind and has three readings rather than
 two. Prefixes are checked before the slash, as §5.3 reads the string, and
 placeholders are not checked for emptiness. The §7 MUST on `human:` is
 recorded in `Okf.V0_2.Actors` as undecidable from a bundle and is not a clause.
+
+**Revised at §13 (2026-10-26).** Appendix A writes `author: team:finance-fpa`
+twice. The fourth scheme is the text's habit, not a slip in one example;
+`Okf.V0_2.appendixA_rejected_actor` is the same rejection on the appendix.
 
 **The question for upstream.** Do the three forms in §7 bind, and if so, is
 `team:<id>` in §5.1's example an error in the example or a fourth form missing
@@ -452,6 +461,11 @@ sections' own words the other, and a reader holds one or the other of the whole
 set. §9's date-form MUST stays unconditional, because §11.3 binds "the
 structure in §9". The model does not pick.
 
+**Revised at §13 (2026-10-26).** §13 lists "permissive conformance" among what
+v0.1 carried forward unchanged. The text calls §11 permissive itself, which
+leans toward §11 as the definition and the REQUIREDs as guidance; it does not
+state it, and the field stays.
+
 **The question for upstream.** Are the REQUIRED fields of §5.1, §5.2 and §10.2
 conformance conditions, or does §11's list define conformance and demote them
 to guidance?
@@ -487,5 +501,34 @@ reading of §11.2 and does not state it; the field stays.
 
 **The question for upstream.** Does §11.2 reach a root `index.md` carrying
 `okf_version`, or is it scoped to the non-reserved files of §11.1?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §13 calls v0.2 a minor bump and lists its breaking changes
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: none — a statement about the document's versioning, not about a
+bundle, so no `Policy` field and no separating bundle.
+
+§12 defines the scheme: a minor bump "introduces backward-compatible
+additions", a major bump "may make breaking changes (renaming required fields,
+changing reserved filenames)". §13 opens: v0.2 "is a minor version bump under
+§12, except for two deliberate breaking changes called out below because they
+rename or retire v0.1 fields". One of the two renames `timestamp` to
+`generated.at`.
+
+The sentence applies §12's scheme and excepts itself from it in the same
+breath. Under §12 a release with breaking changes is a major bump; §13 declares
+one minor. The first entry in this log found the same scheme silent on a type
+change made under an unchanged version string; this entry finds it set aside
+by the document itself at the one bump it describes.
+
+**What the model does.** Nothing. The scheme governs the document, not a
+bundle, and the model has one pinned text and no v0.1 to compare against.
+`Okf.V0_2.Changes` records the inconsistency and that inter-revision theorems
+stay where `docs/scope-and-stance.md` left them, open and the owner's.
+
+**The question for upstream.** Is v0.1 to v0.2 a minor bump, as §13 says, or a
+major one, as §12's own rule for renamed fields would make it?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
