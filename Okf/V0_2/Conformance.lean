@@ -1,5 +1,6 @@
 import Okf.V0_2.Structure
 import Okf.V0_2.Document
+import Okf.V0_2.Provenance
 import Okf.V0_2.Policy
 
 /-!
@@ -25,8 +26,13 @@ table" at `/tables/orders.md`, which fits §4.3's `Customer Orders`; nothing
 names §4.4's own path. §4.1 states its third witness in prose: "a concept
 carrying just `type` is fully conformant".
 
-The separating bundle for `fieldTypes` is invented. Every example in §4 is
-well-typed, so the text offers no concept with a scalar `tags`.
+§5's snippets are combined into one frontmatter below, with a `type` added
+since none of them has one and §4.1 requires it; the second copy writes
+`verified` as the bare mapping §5.2's MAY permits.
+
+The separating bundles are invented. Every example in §4 and §5 is well-typed
+and fully keyed, so the text offers no concept with a scalar `tags`, a `status`
+outside its three values, or a `verified` event without `by`.
 -/
 
 namespace Okf.V0_2
@@ -35,20 +41,29 @@ namespace Okf.V0_2
 def conformant (p : Policy) (b : Bundle) : Bool :=
   b.noReservedConcepts
     && b.allHaveType
+    && b.sourcesHaveResource
+    && b.generatedHasBy
     && (match p.fieldTypes with
-        | .required => b.statedTypesHold
+        | .required => b.statedTypesHold && b.provenanceTypesHold
+        | .convention => true)
+    && (match p.verifiedEntryKeys with
+        | .required => b.verifiedEntriesKeyed
         | .convention => true)
 
 /-- The `Prop` reading of `conformant`. -/
 def Conformant (p : Policy) (b : Bundle) : Prop :=
-  b.NoReservedConcepts ∧ b.AllHaveType ∧ (p.fieldTypes = .required → b.StatedTypesHold)
+  b.NoReservedConcepts ∧ b.AllHaveType ∧ b.SourcesHaveResource ∧ b.GeneratedHasBy
+    ∧ (p.fieldTypes = .required → b.StatedTypesHold ∧ b.ProvenanceTypesHold)
+    ∧ (p.verifiedEntryKeys = .required → b.VerifiedEntriesKeyed)
 
 theorem conformant_iff (p : Policy) (b : Bundle) :
     conformant p b = true ↔ Conformant p b := by
-  obtain ⟨ft⟩ := p
-  cases ft <;>
+  obtain ⟨ft, vk⟩ := p
+  cases ft <;> cases vk <;>
     simp [conformant, Conformant, ← Bundle.noReservedConcepts_iff,
-      ← Bundle.allHaveType_iff, ← Bundle.statedTypesHold_iff, and_assoc]
+      ← Bundle.allHaveType_iff, ← Bundle.sourcesHaveResource_iff,
+      ← Bundle.generatedHasBy_iff, ← Bundle.statedTypesHold_iff,
+      ← Bundle.provenanceTypesHold_iff, ← Bundle.verifiedEntriesKeyed_iff, and_assoc]
 
 /-- A one-key frontmatter, for the witnesses below. -/
 private def fm1 (k : String) (v : Value) : Frontmatter := ⟨[(k, v)], by simp⟩
@@ -107,15 +122,63 @@ def section4Examples : Bundle :=
 def typeOnly : Bundle :=
   ⟨[(["concept.md"], ⟨fm1 "type" (.scalar "Reference"), ""⟩)], by simp⟩
 
+/-- §5.1 and §5.2's events, as written. -/
+def ga4Source : Value :=
+  .map [ ("id", .scalar "ga4-schema"),
+         ("resource", .scalar "https://developers.google.com/analytics/bigquery/export-schema"),
+         ("title", .scalar "GA4 BigQuery Export schema"),
+         ("author", .scalar "team:ga4-docs"),
+         ("usage_count", .scalar "5000"),
+         ("last_modified", .scalar "2026-05-30T00:00:00Z") ]
+
+def humanVerification : Value :=
+  .map [("by", .scalar "human:ahormati"), ("at", .scalar "2026-06-25T09:00:00Z")]
+
+def nightlyVerification : Value :=
+  .map [("by", .scalar "process:finance-nightly"), ("at", .scalar "2026-06-26T02:00:00Z")]
+
+/-- §5's snippets as one frontmatter, `type` added. `verified` is the §5.2
+list. -/
+def section5Frontmatter : Frontmatter :=
+  ⟨[ ("type", .scalar "Reference"),
+     ("sources", .seq [ga4Source]),
+     ("usage_window", .map [("from", .scalar "2026-06-01T00:00:00Z"),
+                            ("to", .scalar "2026-06-30T00:00:00Z")]),
+     ("generated", .map [("by", .scalar "reference_agent/gemini-2.5-pro"),
+                         ("at", .scalar "2026-06-20T22:53:05Z")]),
+     ("verified", .seq [humanVerification, nightlyVerification]),
+     ("status", .scalar "stable"),
+     ("stale_after", .scalar "2026-09-23T00:00:00Z") ],
+   by simp⟩
+
+/-- The same, with `verified` as the bare mapping §5.2's MAY permits. -/
+def section5BareVerifiedFrontmatter : Frontmatter :=
+  ⟨[ ("type", .scalar "Reference"),
+     ("generated", .map [("by", .scalar "reference_agent/gemini-2.5-pro"),
+                         ("at", .scalar "2026-06-20T22:53:05Z")]),
+     ("verified", humanVerification) ],
+   by simp⟩
+
+/-- The §5 snippets as one bundle, at invented paths. -/
+def section5Examples : Bundle :=
+  ⟨[ (["ga4", "events.md"], ⟨section5Frontmatter, ""⟩),
+     (["ga4", "sessions.md"], ⟨section5BareVerifiedFrontmatter, ""⟩) ],
+   by simp⟩
+
 /-- §4.3 and §4.4 conform, whatever the policy. -/
 theorem section4Examples_conformant (p : Policy) : conformant p section4Examples = true := by
-  obtain ⟨ft⟩ := p
-  cases ft <;> decide
+  obtain ⟨ft, vk⟩ := p
+  cases ft <;> cases vk <;> decide
 
 /-- §4.1: "a concept carrying just `type` is fully conformant". -/
 theorem typeOnly_conformant (p : Policy) : conformant p typeOnly = true := by
-  obtain ⟨ft⟩ := p
-  cases ft <;> decide
+  obtain ⟨ft, vk⟩ := p
+  cases ft <;> cases vk <;> decide
+
+/-- §5's snippets conform, whatever the policy. -/
+theorem section5Examples_conformant (p : Policy) : conformant p section5Examples = true := by
+  obtain ⟨ft, vk⟩ := p
+  cases ft <;> cases vk <;> decide
 
 namespace Gaps
 
@@ -131,7 +194,40 @@ def scalarTags : Bundle :=
 Finding: `docs/findings.md`, 2026-10-26, "§4.1 states value types without
 saying whether they bind". -/
 theorem fieldTypes_separates :
-    conformant ⟨.required⟩ scalarTags ≠ conformant ⟨.convention⟩ scalarTags := by
+    conformant ⟨.required, .convention⟩ scalarTags
+      ≠ conformant ⟨.convention, .convention⟩ scalarTags := by
+  decide
+
+/-- A concept whose `status` is none of §5.4's three values. -/
+def unknownStatus : Bundle :=
+  ⟨[(["concept.md"],
+     ⟨⟨[("type", .scalar "Reference"), ("status", .scalar "retired")], by simp⟩, ""⟩)],
+   by simp⟩
+
+/-- §5.4 lists three values for `status` with no keyword attached, so
+`Policy.fieldTypes` separates on §5 as it does on §4.1. Finding:
+`docs/findings.md`, 2026-10-26, "§5 states shapes and an enumeration without
+force". -/
+theorem fieldTypes_separates_on_status :
+    conformant ⟨.required, .convention⟩ unknownStatus
+      ≠ conformant ⟨.convention, .convention⟩ unknownStatus := by
+  decide
+
+/-- A concept whose one `verified` event has `at` and no `by`. -/
+def verifiedWithoutBy : Bundle :=
+  ⟨[(["concept.md"],
+     ⟨⟨[("type", .scalar "Reference"),
+        ("verified", .seq [.map [("at", .scalar "2026-06-25T09:00:00Z")]])], by simp⟩, ""⟩)],
+   by simp⟩
+
+/-- §5.2 marks `generated.by` REQUIRED and nothing within a `verified` event.
+`verifiedWithoutBy` conforms if the event's keys are a description and not if
+they bind, so `Policy.verifiedEntryKeys` is a choice the spec left open.
+Finding: `docs/findings.md`, 2026-10-26, "§5.2 marks nothing within a
+`verified` event". -/
+theorem verifiedEntryKeys_separates :
+    conformant ⟨.required, .required⟩ verifiedWithoutBy
+      ≠ conformant ⟨.required, .convention⟩ verifiedWithoutBy := by
   decide
 
 end Gaps

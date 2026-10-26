@@ -150,3 +150,57 @@ so that a `tags` scalar or a `type` list is non-conformant, or are they
 guidance?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §5.2 marks nothing within a `verified` event
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.verifiedEntryKeys_separates`
+
+§5.2 says `generated.by` is "REQUIRED within `generated`". Of `verified` it
+says "A list of verification events, each with `by` (an actor) and `at` (an
+ISO 8601 datetime)", and marks neither key. §5.3 then derives the trust tier
+from whether `verified` has a `human:` actor among its `by` values, and §5.2
+says "how recently" is the latest `at`.
+
+So `verified: [{ at: 2026-06-25T09:00:00Z }]` is conformant on the text, and
+§5.3 has no answer for it: the event names no actor, so it is neither a
+`human:` actor nor a non-`human:` one. The asymmetry with `generated.by`,
+marked REQUIRED one paragraph earlier, is the reason to think the omission
+may not be deliberate.
+
+**What the model does.** `Policy.verifiedEntryKeys : Force` chooses whether an
+event without `by` and `at` is non-conformant. It is a separate field from
+`fieldTypes`: a reader can hold the value descriptions as conventions and still
+treat `by` as required, because §5.3 computes on it. The strict reading is
+`Frontmatter.verifiedEntriesKeyed`, counting a bare mapping as one event as
+§5.2's MAY permits. The model does not pick a value.
+
+**The question for upstream.** Are `by` and `at` REQUIRED within a `verified`
+event, as `by` is within `generated`?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §5 states shapes and an enumeration without force
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.fieldTypes_separates_on_status`
+
+The same gap as the §4.1 entry above, in the next section. §5 describes
+`sources` as a list of entries with scalar fields, `usage_window` and
+`generated` as mappings, `verified` as a list of events or one bare mapping,
+`status` as `draft | stable | deprecated`, and every timestamp as "an ISO 8601
+datetime with an explicit UTC offset". No RFC 2119 keyword attaches to any of
+these. The `status` enumeration is the sharpest instance: §5.4 lists three
+values in a comment and defines each, and says nothing about a fourth.
+
+**What the model does.** The same `Policy.fieldTypes` field covers §5, through
+`Frontmatter.provenanceTypesHold`. One field for both sections because the gap
+is one editorial habit, and a second field would separate nothing a reader
+could plausibly hold apart. The predicate checks node kinds and the three
+`status` values; ISO 8601 syntax and the UTC offset are not checked, as URI
+syntax was not, being parse work below the trust boundary.
+
+**The question for upstream.** The §4.1 question, extended: are the shape
+descriptions in §5, and the three `status` values, normative?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
