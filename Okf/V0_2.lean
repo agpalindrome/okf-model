@@ -3,6 +3,7 @@ import Okf.V0_2.Structure
 import Okf.V0_2.Document
 import Okf.V0_2.Provenance
 import Okf.V0_2.Links
+import Okf.V0_2.Actors
 import Okf.V0_2.Policy
 import Okf.V0_2.Conformance
 
