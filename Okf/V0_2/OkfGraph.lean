@@ -60,6 +60,11 @@ here. Markdown defines no section structure, so `Okf.V0_2.Computation` records
 the model's extent as a pick, and `levelTwoSubheading` witnesses it. okf-graph
 took the model's extent in okf-tools#149 (`12dda79`), so the witness now draws
 nothing there either.
+
+okf-graph 0.9.0 (okf-tools#150, `b8324ed`, on crates.io 2026-10-26) is the
+first release carrying okf-tools#148 and okf-tools#149, so the first release at
+its own point on every witness here. Each witness names 0.8.0 as the version it
+was read against, and 0.9.0 as where it was taken.
 -/
 
 namespace Okf.V0_2
