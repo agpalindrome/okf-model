@@ -295,3 +295,32 @@ This is also the section that reopened `Bundle`: it now maps paths to
 `okf_version` at the root, a conformance failure?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §9 says newest first without force
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.logOrdering_separates`, invented
+
+§9 says a log's format "is a flat list of date-grouped entries, newest first",
+then "Date headings MUST use ISO 8601 `YYYY-MM-DD` form", then that the bold
+leading word "is a convention, not a requirement". The section marks one thing
+as binding and one as not, and leaves the order between them unmarked. A log
+whose dates ascend conforms if "newest first" is description and not if it
+binds.
+
+**What the model does.** `Policy.logOrdering : Force`, the field
+`docs/scope-and-stance.md` sketched before any Lean existed. The strict
+reading, `Document.logNewestFirst`, is non-increasing order of the date
+headings compared as strings, which is chronological order whenever the MUST
+holds; it admits a repeated date, a pick inside the reading that
+`Okf.V0_2.Log` records. The model does not choose.
+
+This is also the first clause that reads a `Body`. The MUST on date form is
+modelled with a line-based reading of "date heading", a line opening with two
+hashes and a space, which the module docstring states as an approximation of
+markdown rather than a parse.
+
+**The question for upstream.** Is "newest first" a requirement on `log.md`,
+as the date form is, or a description of the example?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.

@@ -40,7 +40,7 @@ inductive ActorFields where
   | withAuthor
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §8. -/
+/-- The spec's open choices, as of §9. -/
 structure Policy where
   /-- §4.1 describes value types for its five named keys, and §5 describes the
   shapes of its families and the three values of `status`, with no keyword
@@ -63,6 +63,11 @@ structure Policy where
   the root, with no keyword attached (`docs/findings.md`, 2026-10-26). Whether
   an index file with other frontmatter is non-conformant. -/
   indexFrontmatter : Force
+  /-- §9 describes a log as "date-grouped entries, newest first", with the MUST
+  on the date form and no keyword on the order (`docs/findings.md`,
+  2026-10-26). Whether a log whose date headings are out of order is
+  non-conformant. The field `docs/scope-and-stance.md` sketched by name. -/
+  logOrdering : Force
   deriving DecidableEq, Repr
 
 end Okf.V0_2
