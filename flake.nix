@@ -13,7 +13,8 @@
       systems = [
         "x86_64-linux"
         "aarch64-linux"
-        "x86_64-darwin"
+        # Not `x86_64-darwin`: nixpkgs 26.11 stopped evaluating it, and nothing
+        # here runs on it (yardmaster#374, 2026-10-26).
         "aarch64-darwin"
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
@@ -27,62 +28,20 @@
       # without type-checking anything. CI runs `scripts/lean-check.sh` as a
       # second step of the same job instead (`.github/workflows/ci.yml`), where
       # the network is available. See CONTRIBUTING, "What the checks enforce".
-      # vale, pinned to the exact version the owner's machine and the source
-      # repo's CI both run, from the upstream release rather than from nixpkgs.
       #
-      # Taking `pkgs.vale` would be less code and the wrong version: this lock
-      # carries 3.15.2, while the vendored rules were measured at 3.17.x and the
-      # source repo pins 3.17.1. A prose linter that disagrees with the one the
-      # rules were written against is worse than none, because the disagreement
-      # shows up as a finding rather than as an error.
-      valeVersion = "3.17.1";
-      valeAssets = {
-        x86_64-linux = {
-          name = "Linux_64-bit";
-          hash = "sha256-25R/ifIpLmoDgaYd4VX2pfXLTLRgyheOpBLvYFVZzv0=";
-        };
-        aarch64-linux = {
-          name = "Linux_arm64";
-          hash = "sha256-ktkev57mnsB3N5vpXNCeZxCrM9PVurZrtILmbryA3CM=";
-        };
-        x86_64-darwin = {
-          name = "macOS_64-bit";
-          hash = "sha256-s3q5md/RQU0EG9LpTO0QMpLWNNp2+VTDhb94ncf1+Tk=";
-        };
-        aarch64-darwin = {
-          name = "macOS_arm64";
-          hash = "sha256-gMrPhe8j9Tz913NV7EGm75muwTbxXfs1F3I0gvNVk/k=";
-        };
-      };
-
-      valeFor =
-        system:
-        let
-          pkgs = nixpkgs.legacyPackages.${system};
-          asset = valeAssets.${system};
-        in
-        pkgs.stdenvNoCC.mkDerivation {
-          pname = "vale";
-          version = valeVersion;
-          src = pkgs.fetchurl {
-            url = "https://github.com/errata-ai/vale/releases/download/v${valeVersion}/vale_${valeVersion}_${asset.name}.tar.gz";
-            inherit (asset) hash;
-          };
-          # The tarball is flat: LICENSE, README.md, vale.
-          sourceRoot = ".";
-          # The Linux builds are dynamically linked against glibc and libstdc++
-          # (read from the release binary's DT_NEEDED, 2026-08-19); the macOS
-          # ones need nothing.
-          nativeBuildInputs = pkgs.lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.autoPatchelfHook;
-          buildInputs = pkgs.lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.stdenv.cc.cc.lib;
-          dontStrip = true;
-          installPhase = ''
-            runHook preInstall
-            install -Dm755 vale $out/bin/vale
-            runHook postInstall
-          '';
-        };
-
+      # vale is `pkgs.vale`, which nixpkgs builds from the upstream source tag,
+      # so the version moves with this lock: 3.25.1 at 3ec6363. That is the
+      # house version, decided by the owner on 2026-10-26 after the vendored
+      # rules were re-measured against it (`vale/README.md` in
+      # agpalindrome/claude, the entries of that date): over the house corpus
+      # 3.25.1 reports a strict superset of 3.17.1's alerts, every extra one a
+      # true positive. Until then this flake fetched the 3.17.1 release binary
+      # and ran it through `autoPatchelfHook`, which under this nixpkgs'
+      # patchelf 0.19.2 writes a file that segfaults on `--version`
+      # (yardmaster#374); a source build never meets patchelf. A vale that
+      # disagrees with the vendored rules is re-measured there, not pinned
+      # back here.
+      #
       # The gate's logic lives in the tracked script, so a hand run and the hook
       # are the same code; this wrapper only supplies the tools.
       proseCheckFor =
@@ -93,7 +52,7 @@
         pkgs.writeShellApplication {
           name = "prose-check";
           runtimeInputs = [
-            (valeFor system)
+            pkgs.vale
             pkgs.findutils
           ];
           text = "exec ${pkgs.bash}/bin/bash ${./scripts/prose-check.sh}";
@@ -246,9 +205,9 @@
               pkgs.elan
               # `taplo` formats `lakefile.toml`.
               pkgs.taplo
-              # The same pinned vale the `prose` hook runs, so
+              # The same vale the `prose` hook runs, so
               # `./scripts/prose-check.sh` works by hand.
-              (valeFor system)
+              pkgs.vale
             ];
           };
         }
