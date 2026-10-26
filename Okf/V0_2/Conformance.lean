@@ -19,8 +19,12 @@ clause in its own module and this one grows by a line.
 Each `Force` field enters through `Force.gate`, so that a theorem about every
 policy is `simp` with each predicate evaluated once, and needs no case split:
 nine fields give 1152 policies, which the earlier `cases` then `decide` pattern
-did not survive. The three-valued fields, `actorForm` and `inlineComp`, are
-parameters of their predicates and are discharged by `cases` on that one field.
+did not survive. The fields with more than two values, `verifiedEntryKeys`,
+`actorForm` and `inlineComp`, are parameters of their predicates and are
+discharged by `cases` on that one field.
+
+`Okf.V0_2.OkfGraph` names the one point of this record a reader has taken,
+okf-graph's, and proves what it accepts and rejects there.
 
 Two kinds of theorem live beside the predicate. The spec's own examples, encoded
 as values, conform under every policy, or under every policy but the one the
@@ -85,7 +89,9 @@ def conformant (p : Policy) (b : Bundle) : Bool :=
     && b.logDatesIso
     && p.fieldTypes.gate (b.statedTypesHold && b.provenanceTypesHold && b.computationTypesHold
           && b.indexTypesHold)
-    && p.verifiedEntryKeys.gate b.verifiedEntriesKeyed
+    && p.familyShapes.gate b.familyShapesHold
+    && p.statusEnum.gate b.statusValid
+    && b.verifiedEntriesKeyed p.verifiedEntryKeys
     && b.byActors p.actorForm
     && p.actorFields.gate (b.authorActors p.actorForm)
     && p.indexFrontmatter.gate b.indexFrontmatterClean
@@ -102,7 +108,9 @@ def Conformant (p : Policy) (b : Bundle) : Prop :=
     ∧ b.LogDatesIso
     ∧ (p.fieldTypes = .required →
         b.StatedTypesHold ∧ b.ProvenanceTypesHold ∧ b.ComputationTypesHold ∧ b.IndexTypesHold)
-    ∧ (p.verifiedEntryKeys = .required → b.VerifiedEntriesKeyed)
+    ∧ (p.familyShapes = .required → b.FamilyShapesHold)
+    ∧ (p.statusEnum = .required → b.StatusValid)
+    ∧ b.VerifiedEntriesKeyed p.verifiedEntryKeys
     ∧ b.ByActors p.actorForm
     ∧ (p.actorFields = .withAuthor → b.AuthorActors p.actorForm)
     ∧ (p.indexFrontmatter = .required → b.IndexFrontmatterClean)
@@ -117,7 +125,7 @@ theorem conformant_iff (p : Policy) (b : Bundle) :
     ActorFields.gate_eq_true_iff, Bundle.typedBlocks_iff, Bundle.sourcesHaveResource_iff,
     Bundle.generatedHasBy_iff, Bundle.attestedHaveRuntime_iff, Bundle.logDatesIso_iff,
     Bundle.statedTypesHold_iff, Bundle.provenanceTypesHold_iff, Bundle.computationTypesHold_iff,
-    Bundle.indexTypesHold_iff,
+    Bundle.indexTypesHold_iff, Bundle.familyShapesHold_iff, Bundle.statusValid_iff,
     Bundle.verifiedEntriesKeyed_iff, Bundle.byActors_iff, Bundle.authorActors_iff,
     Bundle.indexFrontmatterClean_iff, Bundle.logNewestFirst_iff, Bundle.contractsComplete_iff,
     Bundle.computationsProvided_iff, Bundle.footnotesJoined_iff, and_assoc]
@@ -313,7 +321,9 @@ structure AllClausesHold (b : Bundle) : Prop where
   provenanceTypesHold : b.provenanceTypesHold = true
   computationTypesHold : b.computationTypesHold = true
   indexTypesHold : b.indexTypesHold = true
-  verifiedEntriesKeyed : b.verifiedEntriesKeyed = true
+  familyShapesHold : b.familyShapesHold = true
+  statusValid : b.statusValid = true
+  verifiedEntriesKeyed : ∀ k, b.verifiedEntriesKeyed k = true
   byActors : ∀ form, b.byActors form = true
   authorActors : ∀ form, b.authorActors form = true
   indexFrontmatterClean : b.indexFrontmatterClean = true
@@ -326,7 +336,8 @@ theorem conformant_of_allClausesHold {b : Bundle} (h : AllClausesHold b) (p : Po
     conformant p b = true := by
   simp [conformant, h.typedBlocks, h.sourcesHaveResource, h.generatedHasBy,
     h.attestedHaveRuntime, h.logDatesIso, h.statedTypesHold, h.provenanceTypesHold,
-    h.computationTypesHold, h.indexTypesHold, h.verifiedEntriesKeyed, h.byActors, h.authorActors,
+    h.computationTypesHold, h.indexTypesHold, h.familyShapesHold, h.statusValid,
+    h.verifiedEntriesKeyed, h.byActors, h.authorActors,
     h.indexFrontmatterClean, h.logNewestFirst, h.contractsComplete, h.computationsProvided,
     h.footnotesJoined]
 
@@ -337,7 +348,8 @@ theorem section4Examples_conformant (p : Policy) : conformant p section4Examples
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
       computationTypesHold := by decide, indexTypesHold := by decide,
-      verifiedEntriesKeyed := by decide,
+      familyShapesHold := by decide, statusValid := by decide,
+      verifiedEntriesKeyed := by intro k; cases k <;> decide,
       byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
       indexFrontmatterClean := by decide, logNewestFirst := by decide,
       contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,
@@ -350,7 +362,8 @@ theorem typeOnly_conformant (p : Policy) : conformant p typeOnly = true :=
       attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
       computationTypesHold := by decide, indexTypesHold := by decide,
-      verifiedEntriesKeyed := by decide,
+      familyShapesHold := by decide, statusValid := by decide,
+      verifiedEntriesKeyed := by intro k; cases k <;> decide,
       byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
       indexFrontmatterClean := by decide, logNewestFirst := by decide,
       contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,
@@ -367,6 +380,8 @@ theorem section5Examples_conformant (p : Policy)
     intro f; cases f <;> decide
   have hTyped : ∀ scope, section5Examples.typedBlocks scope = true := by
     intro sc; cases sc <;> decide
+  have hKeys : ∀ k, section5Examples.verifiedEntriesKeyed k = true := by
+    intro k; cases k <;> decide
   have hRest :
       section5Examples.sourcesHaveResource = true
         ∧ section5Examples.generatedHasBy = true ∧ section5Examples.attestedHaveRuntime = true
@@ -374,22 +389,24 @@ theorem section5Examples_conformant (p : Policy)
         ∧ section5Examples.provenanceTypesHold = true
         ∧ section5Examples.computationTypesHold = true
         ∧ section5Examples.indexTypesHold = true
-        ∧ section5Examples.verifiedEntriesKeyed = true
+        ∧ section5Examples.familyShapesHold = true ∧ section5Examples.statusValid = true
         ∧ section5Examples.indexFrontmatterClean = true
         ∧ section5Examples.logNewestFirst = true ∧ section5Examples.contractsComplete = true
         ∧ section5Examples.footnotesJoined = true := by decide
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
+  obtain ⟨ft, fs, se, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases af <;> cases afs <;>
     first
     | exact absurd ⟨rfl, rfl⟩ h
-    | simp [conformant, hBy, hAuthorOpen, hAuthorAny, hComp, hRest, hTyped, ActorFields.gate]
+    | simp [conformant, hBy, hAuthorOpen, hAuthorAny, hComp, hRest, hTyped, hKeys,
+        ActorFields.gate]
 
 /-- The one policy that rejects §5's snippets: §7's three forms, reaching
 `author` as §5.1 says they do, meet `author: team:ga4-docs`. The spec's own
 example fails the spec's own rule under that reading. -/
 theorem section5Examples_rejected :
-    conformant ⟨.convention, .convention, .threeForms, .withAuthor, .convention, .convention,
-      .convention, .unconstrained, .convention, .required, .conceptsOnly⟩ section5Examples = false := by
+    conformant ⟨.convention, .convention, .convention, .convention, .threeForms, .withAuthor,
+      .convention, .convention, .convention, .unconstrained, .convention, .required, .conceptsOnly⟩
+      section5Examples = false := by
   decide
 
 /-- §9's own log conforms under every policy. Its body is long enough that the
@@ -404,7 +421,8 @@ theorem section9Log_conformant (p : Policy) : conformant p section9Log = true :=
   simp [conformant, hDates, hOrder, hConcepts, hIndexes, hTyped,
     Bundle.sourcesHaveResource, Bundle.generatedHasBy, Bundle.attestedHaveRuntime,
     Bundle.statedTypesHold, Bundle.provenanceTypesHold, Bundle.computationTypesHold,
-    Bundle.indexTypesHold, Bundle.verifiedEntriesKeyed, Bundle.byActors, Bundle.authorActors,
+    Bundle.indexTypesHold, Bundle.familyShapesHold, Bundle.statusValid,
+    Bundle.verifiedEntriesKeyed, Bundle.byActors, Bundle.authorActors,
     Bundle.indexFrontmatterClean, Bundle.contractsComplete, Bundle.computationsProvided,
     Bundle.footnotesJoined]
 
@@ -420,12 +438,16 @@ theorem section10Examples_conformant (p : Policy) (h : p.inlineComp ≠ .fencedO
   have hFootnotes : section10Examples.footnotesJoined = true := by decide +kernel
   have hCompIndented : section10Examples.computationsProvided .fencedOrIndented = true := by
     decide +kernel
+  have hCompSection : section10Examples.computationsProvided .anySection = true := by
+    decide +kernel
   have hCompAny : section10Examples.computationsProvided .unconstrained = true := by decide
   have hBy : ∀ form, section10Examples.byActors form = true := by intro f; cases f <;> decide
   have hAuthor : ∀ form, section10Examples.authorActors form = true := by
     intro f; cases f <;> decide
   have hTyped : ∀ scope, section10Examples.typedBlocks scope = true := by
     intro sc; cases sc <;> decide
+  have hKeys : ∀ k, section10Examples.verifiedEntriesKeyed k = true := by
+    intro k; cases k <;> decide
   have hRest :
       section10Examples.sourcesHaveResource = true
         ∧ section10Examples.generatedHasBy = true
@@ -434,22 +456,25 @@ theorem section10Examples_conformant (p : Policy) (h : p.inlineComp ≠ .fencedO
         ∧ section10Examples.provenanceTypesHold = true
         ∧ section10Examples.computationTypesHold = true
         ∧ section10Examples.indexTypesHold = true
-        ∧ section10Examples.verifiedEntriesKeyed = true
+        ∧ section10Examples.familyShapesHold = true ∧ section10Examples.statusValid = true
         ∧ section10Examples.indexFrontmatterClean = true
         ∧ section10Examples.logNewestFirst = true
         ∧ section10Examples.contractsComplete = true := by decide
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
+  obtain ⟨ft, fs, se, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases ic with
   | fencedOnly => exact absurd rfl h
-  | fencedOrIndented => simp [conformant, hFootnotes, hCompIndented, hBy, hAuthor, hRest, hTyped]
-  | unconstrained => simp [conformant, hFootnotes, hCompAny, hBy, hAuthor, hRest, hTyped]
+  | fencedOrIndented =>
+    simp [conformant, hFootnotes, hCompIndented, hBy, hAuthor, hRest, hTyped, hKeys]
+  | anySection => simp [conformant, hFootnotes, hCompSection, hBy, hAuthor, hRest, hTyped, hKeys]
+  | unconstrained => simp [conformant, hFootnotes, hCompAny, hBy, hAuthor, hRest, hTyped, hKeys]
 
 /-- The one reading that rejects §10.2's example: §10.3's "single fenced code
 block", met by the example's indented block and absent `computation` key. The
 spec's own example fails the spec's own rule under that reading. -/
 theorem section10Examples_rejected :
-    conformant ⟨.convention, .convention, .unconstrained, .listedOnly, .convention, .convention,
-      .convention, .fencedOnly, .convention, .required, .conceptsOnly⟩ section10Examples = false := by
+    conformant ⟨.convention, .convention, .convention, .convention, .unconstrained, .listedOnly,
+      .convention, .convention, .convention, .fencedOnly, .convention, .required, .conceptsOnly⟩
+      section10Examples = false := by
   have h : section10Examples.computationsProvided .fencedOnly = false := by decide +kernel
   simp [conformant, h]
 
@@ -459,8 +484,8 @@ namespace Gaps
 
 /-- A policy that waives every `Force` field and constrains nothing. -/
 def lax : Policy :=
-  ⟨.convention, .convention, .unconstrained, .listedOnly, .convention, .convention,
-    .convention, .unconstrained, .convention, .convention, .conceptsOnly⟩
+  ⟨.convention, .convention, .convention, .convention, .unconstrained, .listedOnly, .convention,
+    .convention, .convention, .unconstrained, .convention, .convention, .conceptsOnly⟩
 
 /-- A concept whose `tags` is a scalar where §4.1 describes a list. -/
 def scalarTags : Bundle :=
@@ -484,13 +509,34 @@ def unknownStatus : Bundle :=
      ⟨⟨[("type", .scalar "Reference"), ("status", .scalar "retired")], by simp⟩, ""⟩)],
    by simp⟩
 
-/-- §5.4 lists three values for `status` with no keyword attached, so
-`Policy.fieldTypes` separates on §5 as it does on §4.1. Finding:
+/-- §5.4 lists three values for `status` with no keyword attached. Read as
+binding, a fourth value fails; read as description, it passes. Finding:
 `docs/findings.md`, 2026-10-26, "§5 states shapes and an enumeration without
 force". -/
-theorem fieldTypes_separates_on_status :
-    conformant { lax with fieldTypes := .required } unknownStatus
+theorem statusEnum_separates :
+    conformant { lax with statusEnum := .required } unknownStatus
       ≠ conformant lax unknownStatus := by
+  decide
+
+/-- A concept whose `sources` is a scalar where §5.1 describes a list. -/
+def scalarSources : Bundle :=
+  ⟨[(["concept.md"],
+     ⟨⟨[("type", .scalar "Reference"), ("sources", .scalar "the handbook")], by simp⟩, ""⟩)],
+   by simp⟩
+
+/-- §5.1's REQUIRED is "within an entry"; a `sources` with no entries passes it
+vacuously or fails for having no entries to be within. Same finding as
+`statusEnum_separates`; the reading entered on 2026-10-26 from okf-tools#145. -/
+theorem familyShapes_separates :
+    conformant { lax with familyShapes := .required } scalarSources
+      ≠ conformant lax scalarSources := by
+  decide
+
+/-- With the family clauses waived, `familyShapes` is still the only field that
+sees the carrier: under `required` the clause has nothing to check. -/
+theorem familyShapes_separates_under_familyClauses :
+    conformant { lax with familyClauses := .required, familyShapes := .required } scalarSources
+      ≠ conformant { lax with familyClauses := .required } scalarSources := by
   decide
 
 /-- A concept whose one `verified` event has `at` and no `by`. -/
@@ -506,8 +552,30 @@ they bind, so `Policy.verifiedEntryKeys` is a choice the spec left open.
 Finding: `docs/findings.md`, 2026-10-26, "§5.2 marks nothing within a
 `verified` event". -/
 theorem verifiedEntryKeys_separates :
-    conformant { lax with verifiedEntryKeys := .required } verifiedWithoutBy
+    conformant { lax with verifiedEntryKeys := .byAndAt } verifiedWithoutBy
       ≠ conformant lax verifiedWithoutBy := by
+  decide
+
+/-- The middle reading binds `by` too: the same bundle separates it from the
+description reading. -/
+theorem verifiedEntryKeys_separates_byOnly :
+    conformant { lax with verifiedEntryKeys := .byOnly } verifiedWithoutBy
+      ≠ conformant lax verifiedWithoutBy := by
+  decide
+
+/-- A concept whose one `verified` event has `by` and no `at`. -/
+def verifiedWithoutAt : Bundle :=
+  ⟨[(["concept.md"],
+     ⟨⟨[("type", .scalar "Reference"),
+        ("verified", .seq [.map [("by", .scalar "human:ahormati")]])], by simp⟩, ""⟩)],
+   by simp⟩
+
+/-- §5.3 computes on `by` and nothing computes on `at`, so a reader can bind the
+one and not the other: `verifiedWithoutAt` separates the two binding readings.
+Same finding; the third value entered on 2026-10-26 from okf-tools#145. -/
+theorem verifiedEntryKeys_separates_at :
+    conformant { lax with verifiedEntryKeys := .byAndAt } verifiedWithoutAt
+      ≠ conformant { lax with verifiedEntryKeys := .byOnly } verifiedWithoutAt := by
   decide
 
 /-- §7 lists three actor forms with no keyword, and §5.1's own example writes
@@ -657,6 +725,29 @@ theorem inlineComp_separates_unconstrained :
       ≠ conformant lax computationless := by
   decide
 
+/-- An Attested Computation whose `# Computation` section is prose: no fence, no
+indented block, no `computation` key. -/
+def proseComputation : Bundle :=
+  ⟨[(["c.md"],
+     ⟨⟨[("type", .scalar "Attested Computation"), ("runtime", .scalar "bigquery")], by simp⟩,
+      "# Computation\n\nSum `amount` over the fiscal year.\n"⟩)],
+   by simp⟩
+
+/-- A section holding anything counts under `anySection` and a section holding
+no code block does not count under `fencedOrIndented`. Same finding; the value
+entered on 2026-10-26 from okf-tools#145. -/
+theorem inlineComp_separates_anySection :
+    conformant { lax with inlineComp := .anySection } proseComputation
+      ≠ conformant { lax with inlineComp := .fencedOrIndented } proseComputation := by
+  decide
+
+/-- `anySection` still binds "one of two ways": `computationless` fails under it
+and passes under `unconstrained`. -/
+theorem inlineComp_anySection_separates_unconstrained :
+    conformant { lax with inlineComp := .anySection } computationless
+      ≠ conformant lax computationless := by
+  decide
+
 /-- A concept with a footnote definition no `sources[].id` names. -/
 def orphanFootnote : Bundle :=
   ⟨[(["c.md"],
@@ -721,14 +812,17 @@ theorem rootIndexWithVersion_conformant (p : Policy) (h : p.typeScope = .concept
         ∧ Gaps.rootIndexWithVersion.provenanceTypesHold = true
         ∧ Gaps.rootIndexWithVersion.computationTypesHold = true
         ∧ Gaps.rootIndexWithVersion.indexTypesHold = true
-        ∧ Gaps.rootIndexWithVersion.verifiedEntriesKeyed = true
+        ∧ Gaps.rootIndexWithVersion.familyShapesHold = true
+        ∧ Gaps.rootIndexWithVersion.statusValid = true
         ∧ Gaps.rootIndexWithVersion.indexFrontmatterClean = true
         ∧ Gaps.rootIndexWithVersion.logNewestFirst = true
         ∧ Gaps.rootIndexWithVersion.contractsComplete = true
         ∧ Gaps.rootIndexWithVersion.footnotesJoined = true := by decide
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
+  have hKeys : ∀ k, Gaps.rootIndexWithVersion.verifiedEntriesKeyed k = true := by
+    intro k; cases k <;> decide
+  obtain ⟨ft, fs, se, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases ts with
-  | conceptsOnly => simp [conformant, hTyped, hBy, hAuthor, hComp, hRest]
+  | conceptsOnly => simp [conformant, hTyped, hBy, hAuthor, hComp, hRest, hKeys]
   | everyBlock => simp at h
 
 /-- The one reading that rejects §8's own exception: §11.2 taken as every

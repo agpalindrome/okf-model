@@ -1,4 +1,5 @@
 import Okf.V0_2.Document
+import Okf.V0_2.Policy
 
 /-!
 # §5 Provenance, trust, and lifecycle — two conditional clauses and a gap
@@ -18,11 +19,16 @@ of these among them, and says producers "SHOULD follow §5 through §10"; under
 
 Both clauses quantify over entries: of `sources`, and of `verified`. When the
 key holds something with no entries, a scalar say, the clause has nothing to
-check and passes, and the question of the value's shape goes to
-`Policy.fieldTypes`, where the two readings already separate. The other
-reading, a shapeless value failing the REQUIRED clause, is a pick too; this one
-sends the question to the field that exists rather than deciding it twice. An
-entry that is not a mapping has no keys, so it fails the clause under either.
+check and passes vacuously. The first pass sent the value's shape to
+`Policy.fieldTypes` and recorded the other reading, a shapeless value failing
+the REQUIRED clause, as a pick not taken. okf-graph takes it, for `sources`,
+`generated` and `verified`, while holding the leaf shapes inside them as
+conventions (okf-tools#145), and the clauses' own wording, "within an entry",
+"within `generated`", presupposes a carrier of the described kind. So the
+reading is a field, `Policy.familyShapes`, with `Frontmatter.familyShapesHold`
+its strict side: `sources` a list of mappings, `generated` a mapping,
+`verified` a list of mappings or one. An entry that is not a mapping has no
+keys, so it fails the REQUIRED clause under either reading of the carrier.
 
 §5.2's MAY lets a single verifier be written as a bare mapping, so
 `Value.verifiedEvents` counts a mapping as one event.
@@ -34,7 +40,10 @@ with `by` (an actor) and `at` (an ISO 8601 datetime)", with nothing marked, and
 §5.3 derives the trust tier from `by`. So `verified: [{ at: … }]` conforms on
 the text and has no tier. `Policy.verifiedEntryKeys` is the choice; it is
 separate from `fieldTypes` because a reader can hold value descriptions as
-conventions and still treat `by` as required, since §5.3 computes on it.
+conventions and still treat `by` as required, since §5.3 computes on it. The
+same argument separates `by` from `at`: nothing computes on `at`, so a reader
+can bind the one key and not the other, and okf-graph does (okf-tools#145).
+Hence three values, `VerifiedKeys.holds` carrying each.
 `docs/findings.md`, 2026-10-26, "§5.2 marks nothing within a `verified` event".
 
 ## Shapes stated without force, again
@@ -43,12 +52,17 @@ conventions and still treat `by` as required, since §5.3 computes on it.
 `usage_window` and `generated` as mappings, `verified` as a list of mappings or
 one bare mapping, `status` as one of `draft`, `stable`, `deprecated`, and every
 timestamp as a datetime. No keyword attaches. `Frontmatter.provenanceTypesHold`
-is the strict reading, under the same `fieldTypes` field as §4.1: the same
-editorial habit, and a second field would separate nothing new. The `status`
-enumeration is the sharpest instance, and `Okf.V0_2.Gaps` uses it as the
-field's second witness. ISO 8601 syntax, the "explicit UTC offset" the §5
-preamble asks for, and URI syntax are not checked: all three are parse work
-below the trust boundary, and a scalar reaches the model as its text.
+is the whole-description reading, under the same `fieldTypes` field as §4.1,
+the same editorial habit. Two narrower readings sit beside it since
+okf-tools#145. The `status` enumeration is `Policy.statusEnum`, through
+`Frontmatter.statusValid`: §5.4's default and its three definitions compute on
+the value, which is the ground `verifiedEntryKeys` already stands on. The
+carriers' kinds are `Policy.familyShapes`, above. The strict `fieldTypes`
+reading still covers the carriers, so it implies the narrower field; the
+separations in `Okf.V0_2.Gaps` hold each with the others waived. ISO 8601
+syntax, the "explicit UTC offset" the §5 preamble asks for, and URI syntax are
+not checked: all three are parse work below the trust boundary, and a scalar
+reaches the model as its text.
 
 ## Derived values, listed and not modelled
 
@@ -148,27 +162,71 @@ theorem Bundle.generatedHasBy_iff (b : Bundle) :
     b.generatedHasBy = true ↔ b.GeneratedHasBy := by
   simp [Bundle.generatedHasBy, Bundle.GeneratedHasBy]
 
-/-- The strict reading of §5.2's "each with `by` and `at`": every `verified`
-event carries both. Whether it binds is `Policy.verifiedEntryKeys`. -/
-def Frontmatter.verifiedEntriesKeyed (f : Frontmatter) : Bool :=
-  f.keyHolds "verified" fun v => v.verifiedEvents.all fun e => e.hasKey "by" && e.hasKey "at"
+/-- Which keys reading `k` asks of one `verified` event. -/
+def VerifiedKeys.holds : VerifiedKeys → Value → Bool
+  | .byAndAt, e => e.hasKey "by" && e.hasKey "at"
+  | .byOnly, e => e.hasKey "by"
+  | .convention, _ => true
 
-/-- The strict reading over a whole bundle. -/
-def Bundle.verifiedEntriesKeyed (b : Bundle) : Bool :=
-  b.concepts.all fun e => e.2.frontmatter.verifiedEntriesKeyed
+/-- §5.2's "each with `by` and `at`" under reading `k`, over every `verified`
+event. -/
+def Frontmatter.verifiedEntriesKeyed (f : Frontmatter) (k : VerifiedKeys) : Bool :=
+  f.keyHolds "verified" fun v => v.verifiedEvents.all k.holds
+
+/-- The reading over a whole bundle. -/
+def Bundle.verifiedEntriesKeyed (b : Bundle) (k : VerifiedKeys) : Bool :=
+  b.concepts.all fun e => e.2.frontmatter.verifiedEntriesKeyed k
 
 /-- The `Prop` reading of `Bundle.verifiedEntriesKeyed`. -/
-def Bundle.VerifiedEntriesKeyed (b : Bundle) : Prop :=
-  ∀ e ∈ b.concepts, e.2.frontmatter.verifiedEntriesKeyed = true
+def Bundle.VerifiedEntriesKeyed (b : Bundle) (k : VerifiedKeys) : Prop :=
+  ∀ e ∈ b.concepts, e.2.frontmatter.verifiedEntriesKeyed k = true
 
-theorem Bundle.verifiedEntriesKeyed_iff (b : Bundle) :
-    b.verifiedEntriesKeyed = true ↔ b.VerifiedEntriesKeyed := by
+theorem Bundle.verifiedEntriesKeyed_iff (b : Bundle) (k : VerifiedKeys) :
+    b.verifiedEntriesKeyed k = true ↔ b.VerifiedEntriesKeyed k := by
   simp [Bundle.verifiedEntriesKeyed, Bundle.VerifiedEntriesKeyed]
+
+/-- The description reading asks nothing, as `Force.gate_true` says of a waived
+`Force`. -/
+@[simp] theorem VerifiedKeys.holds_convention (e : Value) :
+    VerifiedKeys.convention.holds e = true := rfl
+
+@[simp] theorem Frontmatter.verifiedEntriesKeyed_convention (f : Frontmatter) :
+    f.verifiedEntriesKeyed .convention = true := by
+  simp only [Frontmatter.verifiedEntriesKeyed, Frontmatter.keyHolds]
+  split <;> simp
+
+@[simp] theorem Bundle.verifiedEntriesKeyed_convention (b : Bundle) :
+    b.verifiedEntriesKeyed .convention = true := by
+  simp [Bundle.verifiedEntriesKeyed]
 
 /-- A mapping node. -/
 def Value.isMap : Value → Bool
   | .map _ => true
   | _ => false
+
+/-- A sequence whose items are all mappings: a family's "list of entries". -/
+def Value.isSeqOfMaps : Value → Bool
+  | .seq items => items.all Value.isMap
+  | _ => false
+
+/-- The strict reading of `Policy.familyShapes`: each §5 family's carrier is
+the kind its clause presupposes. -/
+def Frontmatter.familyShapesHold (f : Frontmatter) : Bool :=
+  f.keyHolds "sources" Value.isSeqOfMaps
+    && f.keyHolds "generated" Value.isMap
+    && f.keyHolds "verified" fun v => v.isSeqOfMaps || v.isMap
+
+/-- The strict reading over a whole bundle. -/
+def Bundle.familyShapesHold (b : Bundle) : Bool :=
+  b.concepts.all fun e => e.2.frontmatter.familyShapesHold
+
+/-- The `Prop` reading of `Bundle.familyShapesHold`. -/
+def Bundle.FamilyShapesHold (b : Bundle) : Prop :=
+  ∀ e ∈ b.concepts, e.2.frontmatter.familyShapesHold = true
+
+theorem Bundle.familyShapesHold_iff (b : Bundle) :
+    b.familyShapesHold = true ↔ b.FamilyShapesHold := by
+  simp [Bundle.familyShapesHold, Bundle.FamilyShapesHold]
 
 /-- §5.1's `usage_window`: a mapping with scalar `from` and `to`. -/
 def Value.isUsageWindow (v : Value) : Bool :=
@@ -195,8 +253,26 @@ def Value.isStatus : Value → Bool
   | .scalar s => s == "draft" || s == "stable" || s == "deprecated"
   | _ => false
 
-/-- The strict reading of §5's shape descriptions, for the keys it names.
-Whether this reading binds is `Policy.fieldTypes`, shared with §4.1. -/
+/-- The strict reading of `Policy.statusEnum`: `status`, when present, is one
+of the three. -/
+def Frontmatter.statusValid (f : Frontmatter) : Bool :=
+  f.keyHolds "status" Value.isStatus
+
+/-- The strict reading over a whole bundle. -/
+def Bundle.statusValid (b : Bundle) : Bool :=
+  b.concepts.all fun e => e.2.frontmatter.statusValid
+
+/-- The `Prop` reading of `Bundle.statusValid`. -/
+def Bundle.StatusValid (b : Bundle) : Prop :=
+  ∀ e ∈ b.concepts, e.2.frontmatter.statusValid = true
+
+theorem Bundle.statusValid_iff (b : Bundle) :
+    b.statusValid = true ↔ b.StatusValid := by
+  simp [Bundle.statusValid, Bundle.StatusValid]
+
+/-- The strict reading of §5's shape descriptions, for the keys it names,
+`status` apart, which is `Frontmatter.statusValid`. Whether this reading binds
+is `Policy.fieldTypes`, shared with §4.1. -/
 def Frontmatter.provenanceTypesHold (f : Frontmatter) : Bool :=
   f.keyHolds "sources" (fun v => match v with
       | .seq items => items.all Value.isSourceEntry
@@ -207,7 +283,6 @@ def Frontmatter.provenanceTypesHold (f : Frontmatter) : Bool :=
       | .seq items => items.all Value.isEvent
       | .map _ => v.isEvent
       | _ => false)
-    && f.keyHolds "status" Value.isStatus
     && f.keyHolds "stale_after" Value.isScalar
 
 /-- The strict reading over a whole bundle. -/

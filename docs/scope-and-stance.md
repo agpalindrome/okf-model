@@ -23,16 +23,26 @@ worked examples count as source** — a spec whose §7 rule rejects its own §5.
 example has told us something, and the model's job is to say so precisely rather
 than to pick a winner.
 
-So the model and `okf-graph` may legitimately disagree, and that is not a bug in
-either. `okf-graph` must decide something to run — it accepts `team:` actors
-permissively. The model testifies that the standard itself did not decide.
+`okf-graph` must decide something to run — it accepts `team:` actors
+permissively. The model testifies that the standard itself did not decide, and
+stays neutral on which reading. **`okf-graph` is based on the model**, decided
+2026-10-26 ([okf-tools#145][i145]): what it decides is one point of the record
+below, `okfGraphPolicy`, so a disagreement between the two is not a draw. Either
+`okf-graph` holds a reading of the text the record does not yet express, and the
+record grows to hold it, or `okf-graph` checks something the text does not
+support, and that is `okf-graph`'s to drop. The text settles which. The first
+reading against it grew the record by two fields and three values and found five
+checks of the second kind, all in `Okf/V0_2/OkfGraph.lean`.
+
+[i145]: https://github.com/agpalindrome/okf-tools/issues/145
 
 ### How a gap is represented
 
 Conformance is **parameterized over an explicit policy record whose fields are
 exactly the spec's open choices**. This is the sketch written before any Lean,
 kept as written; the record itself is `Okf/V0_2/Policy.lean`, with eleven
-fields after the first pass (2026-10-26):
+fields after the first pass and thirteen after the reading against `okf-graph`
+(both 2026-10-26):
 
 ```lean
 structure Policy where
@@ -60,9 +70,10 @@ Two theorem shapes carry the stance, and every gap gets both where it can:
 `okf-graph`'s actual behaviour is then a named value, `okfGraphPolicy`, so its
 permissiveness is auditable in one place instead of inferred from `if`
 statements — the "enumerable rather than implicit" property the okf-stack board
-asks of the graph layer. It does not exist yet: writing it means reading
-`okf-graph`'s behaviour against each of the eleven fields, which is its own
-pass.
+asks of the graph layer. It exists since 2026-10-26, in
+`Okf/V0_2/OkfGraph.lean`, read from okf-graph 0.8.0 field by field on
+okf-tools#145 with a file and line for each value. Appendix A and every example
+in the text conform at it. It is a reading of the Rust, not a proof about it.
 
 **Rejected: three-valued conformance** (`yes` / `no` / `undetermined`). It looks
 like the honest encoding and is not. It bakes a judgment about *which* clauses

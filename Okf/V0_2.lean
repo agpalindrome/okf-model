@@ -12,6 +12,7 @@ import Okf.V0_2.Policy
 import Okf.V0_2.Conformance
 import Okf.V0_2.Changes
 import Okf.V0_2.AppendixA
+import Okf.V0_2.OkfGraph
 
 /-!
 # OKF v0.2

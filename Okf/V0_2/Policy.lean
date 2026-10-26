@@ -12,6 +12,13 @@ A field is added when a section is read and found to leave something open; it
 is never added in advance. Each field's docstring names the section and the
 `docs/findings.md` entry, and `Okf.V0_2.Gaps` holds the theorem that the two
 values separate.
+
+A field is also added, or widened, when a reader of the text is found to hold
+a reading none of the existing values express, provided the text supports it.
+`Okf.V0_2.OkfGraph` is the first such reader: okf-graph is based on this model,
+so its behaviour has to be a point in this record, and where it was not, the
+record grew (okf-tools#145, 2026-10-26). A reading the text does not support
+does not enter here; it is okf-graph's to drop.
 -/
 
 namespace Okf.V0_2
@@ -36,6 +43,15 @@ def Force.gate : Force → Bool → Bool
 theorem Force.gate_eq_true_iff (f : Force) (b : Bool) :
     f.gate b = true ↔ (f = .required → b = true) := by
   cases f <;> simp [Force.gate]
+
+/-- Which keys a `verified` event must carry. `byAndAt` is §5.2's "each with
+`by` and `at`" read as binding; `byOnly` binds the key §5.3 computes on and
+leaves `at` as description; `convention` binds neither. -/
+inductive VerifiedKeys where
+  | byAndAt
+  | byOnly
+  | convention
+  deriving DecidableEq, Repr
 
 /-- The readings of §7's actor convention. `threeForms` is the text's list;
 `schemeOrSlash` admits any `<scheme>:<id>`, which the spec's own §5.1 example
@@ -76,26 +92,46 @@ inductive TypeScope where
 
 /-- The readings of §10.3's inline computation. `fencedOnly` is the text, "a
 single fenced code block"; `fencedOrIndented` also admits the indented block
-§10.2's own example uses; `unconstrained` reads "provide the computation in
-one of two ways" as description. -/
+§10.2's own example uses; `anySection` counts a `# Computation` section that
+holds anything at all, so "one of two ways" binds and the block's style is
+description; `unconstrained` reads the whole sentence as description. -/
 inductive InlineCompForm where
   | fencedOnly
   | fencedOrIndented
+  | anySection
   | unconstrained
   deriving DecidableEq, Repr
 
-/-- The spec's open choices, as of §11. -/
+/-- The spec's open choices, after the full text and one reader of it. -/
 structure Policy where
-  /-- §4.1 describes value types for its five named keys, and §5 describes the
-  shapes of its families and the three values of `status`, with no keyword
-  attached (`docs/findings.md`, 2026-10-26, two entries). Whether a concept
-  violating one is non-conformant. One field for both sections: the same
-  editorial habit, and a second field would separate nothing new. -/
+  /-- §4.1 describes value types for its five named keys, §5 the shapes of
+  its families, §10.2 the shapes of a computation's keys and §12 the version
+  string's form, with no keyword attached (`docs/findings.md`, 2026-10-26).
+  Whether a value violating any of them is non-conformant. This is the
+  whole-description reading; the next two fields are the narrower readings a
+  reader can hold apart from it. -/
   fieldTypes : Force
+  /-- §5.1's REQUIRED is "within an entry" of `sources`, §5.2's is "within
+  `generated`", and `verified` is "a list of verification events" or one bare
+  mapping: each clause presupposes a carrier of the described kind. Whether a
+  family whose carrier is some other kind fails. The first pass passed it
+  vacuously and sent the kind to `fieldTypes`, and recorded that as a pick;
+  okf-graph fails it while holding the leaf shapes as conventions
+  (okf-tools#145), which the clauses' wording supports, so it is a field. -/
+  familyShapes : Force
+  /-- §5.4 lists three `status` values with no keyword attached
+  (`docs/findings.md`, 2026-10-26). Whether a fourth is non-conformant.
+  Separate from `fieldTypes` on the precedent `verifiedEntryKeys` set: §5.4's
+  default and its three definitions compute on the value, so a reader can hold
+  the shape descriptions as conventions and this enumeration as binding.
+  okf-graph is that reader (okf-tools#145). -/
+  statusEnum : Force
   /-- §5.2 marks `generated.by` REQUIRED and marks nothing within a `verified`
-  event, which §5.3 then computes on (`docs/findings.md`, 2026-10-26). Whether
-  an event without `by` and `at` is non-conformant. -/
-  verifiedEntryKeys : Force
+  event, which §5.3 then computes on (`docs/findings.md`, 2026-10-26). Which of
+  `by` and `at` an event must carry. Three-valued because §5.3 computes on `by`
+  and nothing computes on `at`, so a reader can bind the one and not the other
+  (okf-tools#145). -/
+  verifiedEntryKeys : VerifiedKeys
   /-- §7 lists three actor forms with no keyword attached, and §5.1's own
   example uses a fourth scheme (`docs/findings.md`, 2026-10-26). Which actor
   strings a `by` field, and under `actorFields` an `author`, may hold. -/

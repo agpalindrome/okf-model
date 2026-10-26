@@ -27,6 +27,9 @@ was. The two self-rejections recur in the text's largest example.
 The appendix's v0.1 form, with `timestamp` and a `# Citations` list, conforms
 under every policy. §13 says a v0.1 bundle is "consumable"; this is stronger,
 and the text does not say it.
+
+`Okf.V0_2.OkfGraph` takes the appendix to okf-graph's own point of the record,
+where okf-tools#146 measured it accepted.
 -/
 
 namespace Okf.V0_2
@@ -160,6 +163,9 @@ theorem appendixA_computations_indented :
     appendixA.computationsProvided .fencedOrIndented = true := by
   decide +kernel
 
+theorem appendixA_computations_section : appendixA.computationsProvided .anySection = true := by
+  decide +kernel
+
 theorem appendixA_computations_any : appendixA.computationsProvided .unconstrained = true := by
   decide
 
@@ -172,13 +178,16 @@ theorem appendixA_familyClauses :
 
 theorem appendixA_shapes :
     appendixA.statedTypesHold = true ∧ appendixA.provenanceTypesHold = true
-      ∧ appendixA.computationTypesHold = true ∧ appendixA.indexTypesHold = true := by
+      ∧ appendixA.computationTypesHold = true ∧ appendixA.indexTypesHold = true
+      ∧ appendixA.familyShapesHold = true ∧ appendixA.statusValid = true := by
   decide +kernel
 
+theorem appendixA_verifiedKeys (k : VerifiedKeys) : appendixA.verifiedEntriesKeyed k = true := by
+  cases k <;> decide
+
 theorem appendixA_rest :
-    appendixA.logDatesIso = true ∧ appendixA.verifiedEntriesKeyed = true
-      ∧ appendixA.indexFrontmatterClean = true ∧ appendixA.logNewestFirst = true
-      ∧ appendixA.contractsComplete = true := by
+    appendixA.logDatesIso = true ∧ appendixA.indexFrontmatterClean = true
+      ∧ appendixA.logNewestFirst = true ∧ appendixA.contractsComplete = true := by
   decide
 
 /-- Appendix A conforms under every policy but the two readings the text itself
@@ -187,14 +196,15 @@ theorem appendixA_conformant (p : Policy)
     (hActor : ¬ (p.actorForm = .threeForms ∧ p.actorFields = .withAuthor))
     (hFence : p.inlineComp ≠ .fencedOnly) :
     conformant p appendixA = true := by
-  obtain ⟨ft, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
+  obtain ⟨ft, fs, se, vk, af, afs, ifm, lo, cf, ic, fl, fc, ts⟩ := p
   cases af <;> cases afs <;> cases ic <;>
     first
     | exact absurd ⟨rfl, rfl⟩ hActor
     | exact absurd rfl hFence
     | simp [conformant, appendixA_typedBlocks, appendixA_byActors, appendixA_authorActors_open,
-        appendixA_authorActors_any, appendixA_computations_indented, appendixA_computations_any,
-        appendixA_footnotes, appendixA_familyClauses, appendixA_shapes, appendixA_rest,
+        appendixA_authorActors_any, appendixA_computations_indented,
+        appendixA_computations_section, appendixA_computations_any, appendixA_footnotes,
+        appendixA_familyClauses, appendixA_shapes, appendixA_verifiedKeys, appendixA_rest,
         ActorFields.gate]
 
 /-- The first reading that rejects Appendix A: §7's three forms reaching
@@ -246,7 +256,8 @@ theorem appendixAv01_conformant (p : Policy) : conformant p appendixAv01 = true 
       generatedHasBy := by decide, attestedHaveRuntime := by decide, logDatesIso := by decide,
       statedTypesHold := by decide, provenanceTypesHold := by decide,
       computationTypesHold := by decide, indexTypesHold := by decide,
-      verifiedEntriesKeyed := by decide,
+      familyShapesHold := by decide, statusValid := by decide,
+      verifiedEntriesKeyed := by intro k; cases k <;> decide,
       byActors := by intro f; cases f <;> decide, authorActors := by intro f; cases f <;> decide,
       indexFrontmatterClean := by decide, logNewestFirst := by decide,
       contractsComplete := by decide, computationsProvided := by intro f; cases f <;> decide,

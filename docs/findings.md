@@ -27,6 +27,14 @@ drift:
 The four entries already in the friction log stay where they are. One that later
 acquires a Lean witness gains a **cross-link** from here, not a copy.
 
+Since 2026-10-26 the checker's readings are one named point of the model,
+`Okf.V0_2.okfGraphPolicy` ([okf-tools#145][i145]). An entry below that the
+checker decided says so in a dated **Revised against okf-graph** paragraph; the
+split stays, because the friction log records why the checker chose and this
+log records that the text left the choice.
+
+[i145]: https://github.com/agpalindrome/okf-tools/issues/145
+
 [friction]: https://github.com/agpalindrome/okf-tools/blob/main/docs/okf-friction.md
 
 ## Entry format
@@ -159,7 +167,9 @@ guidance?
 ## 2026-10-26 — §5.2 marks nothing within a `verified` event
 
 Pinned: SPEC.md `ad30107c` (declared v0.2)
-Witness: `Okf.V0_2.Gaps.verifiedEntryKeys_separates`
+Witness: `Okf.V0_2.Gaps.verifiedEntryKeys_separates`,
+`Okf.V0_2.Gaps.verifiedEntryKeys_separates_byOnly` and
+`Okf.V0_2.Gaps.verifiedEntryKeys_separates_at`, all invented
 
 §5.2 says `generated.by` is "REQUIRED within `generated`". Of `verified` it
 says "A list of verification events, each with `by` (an actor) and `at` (an
@@ -173,12 +183,19 @@ So `verified: [{ at: 2026-06-25T09:00:00Z }]` is conformant on the text, and
 marked REQUIRED one paragraph earlier, is the reason to think the omission
 may not be deliberate.
 
-**What the model does.** `Policy.verifiedEntryKeys : Force` chooses whether an
-event without `by` and `at` is non-conformant. It is a separate field from
-`fieldTypes`: a reader can hold the value descriptions as conventions and still
-treat `by` as required, because §5.3 computes on it. The strict reading is
-`Frontmatter.verifiedEntriesKeyed`, counting a bare mapping as one event as
-§5.2's MAY permits. The model does not pick a value.
+**What the model does.** `Policy.verifiedEntryKeys : VerifiedKeys` chooses
+which of `by` and `at` an event must carry: both, `by` alone, or neither. It is
+a separate field from `fieldTypes`: a reader can hold the value descriptions as
+conventions and still treat `by` as required, because §5.3 computes on it. The
+same argument separates the two keys, since nothing computes on `at`. The
+readings are `VerifiedKeys.holds` over `Frontmatter.verifiedEntriesKeyed`,
+counting a bare mapping as one event as §5.2's MAY permits. The model does not
+pick a value.
+
+**Revised against okf-graph (2026-10-26).** okf-graph fails an event with no
+`by` and is silent on a missing `at`, a reading the field's two values did not
+express. The text supports it, by the §5.3 argument above, so the field became
+three-valued and okf-graph's point is `byOnly`.
 
 **The question for upstream.** Are `by` and `at` REQUIRED within a `verified`
 event, as `by` is within `generated`?
@@ -188,7 +205,8 @@ event, as `by` is within `generated`?
 ## 2026-10-26 — §5 states shapes and an enumeration without force
 
 Pinned: SPEC.md `ad30107c` (declared v0.2)
-Witness: `Okf.V0_2.Gaps.fieldTypes_separates_on_status`
+Witness: `Okf.V0_2.Gaps.statusEnum_separates` and
+`Okf.V0_2.Gaps.familyShapes_separates`, both invented
 
 The same gap as the §4.1 entry above, in the next section. §5 describes
 `sources` as a list of entries with scalar fields, `usage_window` and
@@ -198,12 +216,25 @@ datetime with an explicit UTC offset". No RFC 2119 keyword attaches to any of
 these. The `status` enumeration is the sharpest instance: §5.4 lists three
 values in a comment and defines each, and says nothing about a fourth.
 
-**What the model does.** The same `Policy.fieldTypes` field covers §5, through
-`Frontmatter.provenanceTypesHold`. One field for both sections because the gap
-is one editorial habit, and a second field would separate nothing a reader
-could plausibly hold apart. The predicate checks node kinds and the three
-`status` values; ISO 8601 syntax and the UTC offset are not checked, as URI
-syntax was not, being parse work below the trust boundary.
+**What the model does.** Three fields, since 2026-10-26. `Policy.fieldTypes`
+covers the whole description through `Frontmatter.provenanceTypesHold`, as it
+covers §4.1. `Policy.statusEnum` is the enumeration on its own, through
+`Frontmatter.statusValid`: §5.4's default and its three definitions compute on
+the value, which is the ground the §5.2 entry's field stands on. And
+`Policy.familyShapes` is the kind of each family's carrier, through
+`Frontmatter.familyShapesHold`: §5.1's REQUIRED is "within an entry" and
+§5.2's "within `generated`", so each clause presupposes a list of mappings or a
+mapping, and whether a carrier of another kind fails is its own question. ISO
+8601 syntax and the UTC offset are not checked, as URI syntax was not, being
+parse work below the trust boundary.
+
+**Revised against okf-graph (2026-10-26).** The first pass held one field for
+all of §5's shapes, on the ground that a second would separate nothing a reader
+could hold apart. okf-graph is a reader who does: a fourth `status` value and a
+scalar `sources` fail its bundle, while a scalar `tags` or a malformed
+`parameters` entry passes. Both narrower readings have the textual ground
+above, so the one field became three, and okf-graph's point is `statusEnum`
+and `familyShapes` binding with `fieldTypes` not.
 
 **The question for upstream.** The §4.1 question, extended: are the shape
 descriptions in §5, and the three `status` values, normative?
@@ -231,13 +262,24 @@ Or the list is description, and any scalar is an actor.
 **What the model does.** `Policy.actorForm : ActorForm` with `threeForms`,
 `schemeOrSlash` and `unconstrained`. A separate field from `fieldTypes`, since
 this is string content rather than node kind and has three readings rather than
-two. Prefixes are checked before the slash, as §5.3 reads the string, and
-placeholders are not checked for emptiness. The §7 MUST on `human:` is
-recorded in `Okf.V0_2.Actors` as undecidable from a bundle and is not a clause.
+two. Prefixes are checked before the slash, as §5.3 reads the string, and each
+placeholder is non-empty. The §7 MUST on `human:` is recorded in
+`Okf.V0_2.Actors` as undecidable from a bundle and is not a clause.
 
 **Revised at §13 (2026-10-26).** Appendix A writes `author: team:finance-fpa`
 twice. The fourth scheme is the text's habit, not a slip in one example;
 `Okf.V0_2.appendixA_rejected_actor` is the same rejection on the appendix.
+
+**Revised against okf-graph (2026-10-26).** okf-graph's actor rule is
+`schemeOrSlash` with each placeholder non-empty, which the first pass had left
+unchecked; a placeholder names something, so the constraining values now ask
+for it. Two further checks of okf-graph's are not readings of §7 and did not
+enter: a scheme limited to ASCII letters, digits, `_` and `-`, and a miscased
+`human:` rejected. §7 names no character set, and §5.3 makes `Human:` a
+non-`human:` actor rather than a malformed one.
+`Okf.V0_2.actorDefects_conformant_okfGraph` shows both conformant at
+okf-graph's own point, with a third: an actor carrying both separators, which
+okf-graph splits at the slash first.
 
 **The question for upstream.** Do the three forms in §7 bind, and if so, is
 `team:<id>` in §5.1's example an error in the example or a fourth form missing
@@ -381,7 +423,9 @@ Attested Computation, as `runtime` is?
 Pinned: SPEC.md `ad30107c` (declared v0.2)
 Witness: `Okf.V0_2.Gaps.inlineComp_separates` and
 `Okf.V0_2.section10Examples_rejected`, both from the spec's own §10.2 example;
-`Okf.V0_2.Gaps.inlineComp_separates_unconstrained`, invented
+`Okf.V0_2.Gaps.inlineComp_separates_unconstrained`,
+`Okf.V0_2.Gaps.inlineComp_separates_anySection` and
+`Okf.V0_2.Gaps.inlineComp_anySection_separates_unconstrained`, invented
 
 §10.3 says to "provide the computation in one of two ways": inline, as "a
 single fenced code block in the body under `# Computation`", or as a file named
@@ -395,14 +439,27 @@ code block too, it provides it inline. Under a reading of the sentence as
 description, nothing is checked.
 
 **What the model does.** `Policy.inlineComp : InlineCompForm` with
-`fencedOnly`, `fencedOrIndented` and `unconstrained`, the second field
-`docs/scope-and-stance.md` sketched before any Lean existed. The strict
-readings require exactly one of the key and a body block, since "one of two
-ways" and "omit the body fence" read as exclusive; "single" is not counted.
+`fencedOnly`, `fencedOrIndented`, `anySection` and `unconstrained`, the second
+field `docs/scope-and-stance.md` sketched before any Lean existed. The three
+constraining readings require exactly one of the key and a body block, since
+"one of two ways" and "omit the body fence" read as exclusive; "single" is not
+counted. `anySection` counts a section holding anything, so the style of the
+block is description and only the count binds.
 The body is read by lines, as `Okf.V0_2.Log` reads it, and
 `Okf.V0_2.Computation` records the approximation. `section10Examples_rejected`
 is the stance document's scenario a second time: the spec's own example fails
 the spec's own rule.
+
+**Revised against okf-graph (2026-10-26).** okf-graph keeps the exactly-one as
+a defect and asks nothing of the block's style, a reading the three values did
+not express: `unconstrained` waives the count too. "Fenced" describes a block
+and "one of two ways" counts them, so the text supports it, and `anySection`
+entered; an empty section is no block of any style and does not count, which
+is okf-graph's CONCEPT-11. okf-graph also accepts a `Computation` heading at
+any level and with leading whitespace, where §10.3 says `# Computation`; that
+is not a reading and did not enter.
+`Okf.V0_2.headingAcceptances_rejected_okfGraph` rejects both at okf-graph's
+own point.
 
 **The question for upstream.** Does an indented code block under
 `# Computation` satisfy §10.3, or should the §10.2 example use a fence?

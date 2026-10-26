@@ -36,13 +36,20 @@ a pick, recorded. `docs/findings.md`, 2026-10-26, "§10.2 marks `executor` and
 `computation` path with the body fence omitted, "in one of two ways". §10.2's
 own example indents its SQL four spaces, has no fence, and has no `computation`
 key. `Policy.inlineComp` holds the choice: the text's fence only, fence or
-indented block, or the sentence as description. The strict readings require
-exactly one of the key and a body block, since "one of two ways" and "omit the
-body fence" read as exclusive. "Single" is not counted.
+indented block, a section holding anything, or the sentence as description.
+The constraining readings require exactly one of the key and a body block,
+since "one of two ways" and "omit the body fence" read as exclusive. "Single"
+is not counted. `anySection` was added against okf-graph (okf-tools#145,
+2026-10-26), which keeps the exactly-one and asks nothing of the block's
+style; the text supports it, since "fenced" describes a block and "one of two
+ways" counts them. A section with no non-blank line is not a block of any
+style, so it does not count: that is okf-graph's reading too.
 
 The body is read as §9 reads it, by lines. The `# Computation` section is the
 lines after a line that is exactly `# Computation`, up to the next line
-opening `# `. A fence is a line opening with three backticks or three tildes;
+opening `# `. §10.3 names that heading, so a `## Computation` is not it;
+okf-graph accepts a heading at any level, which `Okf.V0_2.OkfGraph` records as
+a divergence the text does not support. A fence is a line opening with three backticks or three tildes;
 an indented block is a line opening with four spaces or a tab and carrying
 more than that. The same approximation of markdown as `Okf.V0_2.Log` records.
 `docs/findings.md`, 2026-10-26, "§10.3 says fenced, and §10.2's example is
@@ -146,10 +153,19 @@ def Body.hasComputationFence (b : Body) : Bool :=
 def Body.hasIndentedComputation (b : Body) : Bool :=
   (computationSection (splitLines b.toList)).any isIndentedCodeLine
 
+/-- A line with something on it. -/
+def isNonBlankLine (line : List Char) : Bool :=
+  line.any fun c => !c.isWhitespace
+
+/-- The open form: a `# Computation` section holding anything at all. -/
+def Body.hasComputationContent (b : Body) : Bool :=
+  (computationSection (splitLines b.toList)).any isNonBlankLine
+
 /-- Which bodies a reading counts as carrying an inline computation. -/
 def InlineCompForm.bodyHas : InlineCompForm → Body → Bool
   | .fencedOnly, b => b.hasComputationFence
   | .fencedOrIndented, b => b.hasComputationFence || b.hasIndentedComputation
+  | .anySection, b => b.hasComputationContent
   | .unconstrained, _ => true
 
 /-- §10.3 under reading `form`: an Attested Computation provides its
