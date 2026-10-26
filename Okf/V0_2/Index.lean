@@ -25,6 +25,15 @@ The strict reading: an index file's frontmatter is empty, or at the bundle
 root holds `okf_version` and nothing else. The root is the one-segment path.
 `okf_version` is held as a key name; §12 gives its meaning and is not read.
 
+## §11.3 gives §8 force, and moves the gap
+
+§11.3 makes a bundle's conformance depend on every `index.md` following "the
+structure in §8". That is the force this field was created for want of, and
+the gap moves rather than closes: whether "contain no frontmatter" is part of
+§8's structure, or only the sections-and-bullets body is. The two readings and
+the field are the same; the reason is better. The body structure §11.3 binds is
+not modelled beyond this, see below.
+
 ## What is not modelled
 
 The body "uses one or more sections, each grouping concepts under a heading",
@@ -40,10 +49,6 @@ namespace Okf.V0_2
 /-- A file at the bundle root: one segment. -/
 def Path.isRoot (p : Path) : Bool :=
   p.length == 1
-
-/-- No keys at all. -/
-def Frontmatter.isEmpty (f : Frontmatter) : Bool :=
-  f.entries.isEmpty
 
 /-- Every key is `okf_version`; with unique keys, that is at most the one. -/
 def Frontmatter.onlyOkfVersion (f : Frontmatter) : Bool :=

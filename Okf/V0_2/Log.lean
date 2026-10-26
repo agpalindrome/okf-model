@@ -39,6 +39,14 @@ might mean one heading per date. That is a pick inside the strict reading,
 recorded here and not given a field. `docs/findings.md`, 2026-10-26, "§9 says
 newest first without force".
 
+## §11.3 gives §9 force, and moves the gap
+
+§11.3 makes conformance depend on every `log.md` following "the structure in
+§9". The date-form MUST was a condition already; "newest first" now has force
+from §11.3 if order counts as structure, and the gap `Policy.logOrdering`
+represents moves from "no keyword" to "is order structure". Same two readings,
+same field. The title and bullet shape §11.3 arguably binds are not modelled.
+
 ## Log frontmatter is unaddressed
 
 §8 says index files contain no frontmatter. §9 says nothing about `log.md`

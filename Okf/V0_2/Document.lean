@@ -1,4 +1,5 @@
 import Okf.V0_2.Structure
+import Okf.V0_2.Policy
 
 /-!
 # §4 Concept documents — the second clause, and the first gap
@@ -10,11 +11,15 @@ they bind. This module holds the clause and the two readings of those types;
 `Okf.V0_2.Policy` holds the field that chooses between them, and
 `Okf.V0_2.Conformance` assembles the clauses.
 
-## The clause: `type` is present
+## The clause: `type` is present and non-empty, in the blocks §11.2 reaches
 
 §4.1 marks one key REQUIRED, and says in prose that it is "the only
-always-required key". The word "always" implies keys required under some
-condition, which §4.1 hands to §5 and §10; nothing here presumes their shape.
+always-required key". §11.2 restates it as "every frontmatter block contains a
+non-empty `type` field", so the clause checks non-emptiness, read for any node
+kind: a scalar with text, or a list or mapping with an entry. Which kind it
+should be is `Policy.fieldTypes`. Which blocks §11.2 reaches is
+`Policy.typeScope`: §11.1 speaks of non-reserved files and §11.2 of every
+block, and §8 permits a root `index.md` whose only key is `okf_version`.
 
 ## The gap: value types stated without force
 
@@ -53,23 +58,36 @@ to §5.1. Extensions MAY appear, so an unknown key is nothing to check.
 
 namespace Okf.V0_2
 
-/-- §4.1 REQUIRED: the concept's frontmatter carries a `type` key. Only
-presence; what the value is belongs to `Frontmatter.statedTypesHold`. -/
-def Document.hasType (d : Document) : Bool :=
-  (d.frontmatter.get? "type").isSome
+/-- §11.2's "non-empty", for any node kind. -/
+def Value.nonEmpty : Value → Bool
+  | .scalar s => !(s == "")
+  | .seq items => !items.isEmpty
+  | .map entries => !entries.isEmpty
 
-/-- The second clause: every concept in the bundle carries `type`. Over
-`Bundle.concepts`: §8's index files have no `type`, and are not concepts. -/
-def Bundle.allHaveType (b : Bundle) : Bool :=
-  b.concepts.all fun e => e.2.hasType
+/-- §4.1 REQUIRED and §11.2: the frontmatter carries a non-empty `type`. What
+kind of value it is belongs to `Frontmatter.statedTypesHold`. -/
+def Document.hasNonEmptyType (d : Document) : Bool :=
+  match d.frontmatter.get? "type" with
+  | some v => v.nonEmpty
+  | none => false
 
-/-- The `Prop` reading of `Bundle.allHaveType`. -/
-def Bundle.AllHaveType (b : Bundle) : Prop :=
-  ∀ e ∈ b.concepts, e.2.hasType = true
+/-- The second clause, under reading `scope`. `conceptsOnly`: every concept
+carries a non-empty `type`. `everyBlock`: so does every reserved file whose
+frontmatter is not empty. -/
+def Bundle.typedBlocks (b : Bundle) : TypeScope → Bool
+  | .conceptsOnly => b.concepts.all fun e => e.2.hasNonEmptyType
+  | .everyBlock => b.entries.all fun e =>
+      (e.1.isReserved && e.2.frontmatter.isEmpty) || e.2.hasNonEmptyType
 
-theorem Bundle.allHaveType_iff (b : Bundle) :
-    b.allHaveType = true ↔ b.AllHaveType := by
-  simp [Bundle.allHaveType, Bundle.AllHaveType]
+/-- The `Prop` reading of `Bundle.typedBlocks`. -/
+def Bundle.TypedBlocks (b : Bundle) : TypeScope → Prop
+  | .conceptsOnly => ∀ e ∈ b.concepts, e.2.hasNonEmptyType = true
+  | .everyBlock => ∀ e ∈ b.entries,
+      ((e.1.isReserved && e.2.frontmatter.isEmpty) || e.2.hasNonEmptyType) = true
+
+theorem Bundle.typedBlocks_iff (b : Bundle) (scope : TypeScope) :
+    b.typedBlocks scope = true ↔ b.TypedBlocks scope := by
+  cases scope <;> simp [Bundle.typedBlocks, Bundle.TypedBlocks]
 
 /-- A scalar node. -/
 def Value.isScalar : Value → Bool

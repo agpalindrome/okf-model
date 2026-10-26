@@ -291,6 +291,12 @@ This is also the section that reopened `Bundle`: it now maps paths to
 §3.1 clause that forbade a concept at a reserved path went with it;
 `Okf.V0_2.Structure` records why that removes nothing the text decides.
 
+**Revised at §11 (2026-10-26).** §11.3 makes conformance depend on every
+`index.md` following "the structure in §8". That gives §8 the force this entry
+said it lacked, and moves the gap: whether "contain no frontmatter" is part of
+§8's structure, or only the body's sections and bullets are. The field and its
+two readings are unchanged.
+
 **The question for upstream.** Is frontmatter on an `index.md`, other than
 `okf_version` at the root, a conformance failure?
 
@@ -319,6 +325,10 @@ This is also the first clause that reads a `Body`. The MUST on date form is
 modelled with a line-based reading of "date heading", a line opening with two
 hashes and a space, which the module docstring states as an approximation of
 markdown rather than a parse.
+
+**Revised at §11 (2026-10-26).** §11.3 makes conformance depend on every
+`log.md` following "the structure in §9". The gap moves from "no keyword" to
+"is order structure"; the field and its two readings are unchanged.
 
 **The question for upstream.** Is "newest first" a requirement on `log.md`,
 as the date form is, or a description of the example?
@@ -410,5 +420,61 @@ readable `Body`, and `Okf.V0_2.Footnotes` records the route.
 
 **The question for upstream.** Is a footnote definition with no matching
 `sources[].id` a conformance failure?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §11 defines conformance without the REQUIREDs of §5 and §10
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.familyClauses_separates`, invented
+
+§11 says a bundle "is conformant with OKF v0.2 if" three things hold: every
+non-reserved `.md` file has a parseable frontmatter block, every block has a
+non-empty `type`, and every reserved file follows §8 and §9. It then says that
+when the families are present, "producers SHOULD follow §5 through §10", and
+that "consumers SHOULD treat all other constraints as soft guidance".
+
+§5.1 says `resource` is "REQUIRED within an entry". §5.2 says `generated.by`
+is "REQUIRED within `generated`". §10.2 says `runtime` is "REQUIRED for this
+type". None of the three is among §11's conditions, and §11's SHOULD places all
+of §5 through §10 below them. So a concept whose `generated` has no `by`
+conforms by §11 and violates §5.2.
+
+**What the model does.** `Policy.familyClauses : Force` gates the three
+clauses that come from those REQUIREDs together: §11 is one reading and the
+sections' own words the other, and a reader holds one or the other of the whole
+set. §9's date-form MUST stays unconditional, because §11.3 binds "the
+structure in §9". The model does not pick.
+
+**The question for upstream.** Are the REQUIRED fields of §5.1, §5.2 and §10.2
+conformance conditions, or does §11's list define conformance and demote them
+to guidance?
+
+**Not raised upstream** (2026-10-26). Filing is the owner's call.
+
+## 2026-10-26 — §11.2 read literally rejects §8's root `okf_version`
+
+Pinned: SPEC.md `ad30107c` (declared v0.2)
+Witness: `Okf.V0_2.Gaps.typeScope_separates` and
+`Okf.V0_2.rootIndexWithVersion_rejected`, both from §8's own exception
+
+§11.2: "Every frontmatter block contains a non-empty `type` field." §8: "a
+bundle-root `index.md` MAY carry an `okf_version` key". A root `index.md` with
+`okf_version: "0.2"` has a frontmatter block and no `type`. §11.1 speaks of
+"every non-reserved `.md` file", and §11.2 may inherit that scope or may not;
+the text does not say.
+
+Read literally, §11.2 rejects the one form §8 permits. Read as scoped by §11.1,
+it does not. It is the third time a rule in one section rejects a form another
+section gives.
+
+**What the model does.** `Policy.typeScope : TypeScope` with `conceptsOnly`
+and `everyBlock`, and clause two takes it as a parameter. Under `everyBlock` a
+reserved file with an empty frontmatter passes, since the model cannot tell an
+absent block from an empty one and §11.1 is parse-side. §11.2's "non-empty" is
+read for any node kind, with the kind left to `fieldTypes`.
+
+**The question for upstream.** Does §11.2 reach a root `index.md` carrying
+`okf_version`, or is it scoped to the non-reserved files of §11.1?
 
 **Not raised upstream** (2026-10-26). Filing is the owner's call.
