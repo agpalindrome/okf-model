@@ -119,9 +119,10 @@ def Frontmatter.get? (f : Frontmatter) (key : String) : Option Value :=
 
 /-- Everything in the concept document after the frontmatter.
 
-Text, because that is all §2 makes it. §6 gives links a meaning, which may
-force a structured body later; extracting them from text is the parse step
-`docs/scope-and-stance.md` puts below the trust boundary. -/
+Text, because that is all §2 makes it, and §6, read, states no rule over body
+content either (`Okf.V0_2.Links`). A section that does would force structure
+here; extracting it from text is the parse step `docs/scope-and-stance.md`
+puts below the trust boundary. -/
 abbrev Body := String
 
 /-- A single unit of knowledge: one markdown document, split into its two

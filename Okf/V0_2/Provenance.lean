@@ -56,13 +56,14 @@ other two are the same kind of thing, and the third depends on the clock. None
 is a clause and none is defined here. The tier is a pure function the text
 defines fully, so this is a decision, recorded, not an impossibility.
 
-## Parked for §6: the footnote join
+## Parked: the footnote join
 
 §5.1 attributes a claim with a markdown footnote whose label is a
 `sources[].id`, and says `id` SHOULD be present when the body cites the source.
-Both need a `Body` with structure, which §6 is expected to force. The question,
-whether a footnote label with no matching `id` is a conformance failure, waits
-for the section that makes a witness possible.
+Both need a `Body` with structure. §6 was expected to force one and did not
+(`Okf.V0_2.Links`); §10 is the next candidate. The question, whether a footnote
+label with no matching `id` is a conformance failure, waits for the section
+that makes a witness possible.
 
 ## What §5 binds consumers to
 
