@@ -1,4 +1,4 @@
-import Okf.V0_2.Structure
+import Okf.V0_2.Document
 import Okf.V0_2.Policy
 
 /-!
@@ -23,7 +23,23 @@ frontmatter, without force".
 
 The strict reading: an index file's frontmatter is empty, or at the bundle
 root holds `okf_version` and nothing else. The root is the one-segment path.
-`okf_version` is held as a key name; §12 gives its meaning and is not read.
+
+§12 adds a second text: the root block is "the only place frontmatter is
+permitted in an `index.md`". "Permitted" is a word about rules where §8's
+"contain no frontmatter" was indicative, so the strict reading gains weight;
+but it is not RFC 2119, and it says where a block may sit and not which keys
+it may hold, so the field stays.
+
+## §12: the version string's form
+
+§12 says revisions "are versioned as `<major>.<minor>`" and writes the example
+as the quoted string `"0.2"`. The strict reading, under `fieldTypes` like every
+other shape: `okf_version`, when present on an index, is a scalar of digits, a
+dot and digits. It is checked over `indexes`, where §8 and §12 place it; on a
+concept it is an extension key under §4.1 and is not read. Whether a bundle
+declaring some other version can be conformant "with OKF v0.2" (§11), the text
+does not say, and the model has no second text to compare against; the first
+`docs/findings.md` entry already carries what §12's bump rules did not catch.
 
 ## §11.3 gives §8 force, and moves the gap
 
@@ -53,6 +69,32 @@ def Path.isRoot (p : Path) : Bool :=
 /-- Every key is `okf_version`; with unique keys, that is at most the one. -/
 def Frontmatter.onlyOkfVersion (f : Frontmatter) : Bool :=
   f.entries.all fun kv => kv.1 == "okf_version"
+
+/-- Digits, a dot, digits: §12's `<major>.<minor>`. -/
+def isMajorMinor (s : String) : Bool :=
+  match s.toList.span (· != '.') with
+  | (major, '.' :: minor) =>
+    !major.isEmpty && major.all Char.isDigit && !minor.isEmpty && minor.all Char.isDigit
+  | _ => false
+
+/-- §12's version string as a shape: `okf_version`, when present, has the
+`<major>.<minor>` form. -/
+def Value.isVersion : Value → Bool
+  | .scalar s => isMajorMinor s
+  | _ => false
+
+/-- The strict reading of §12's shape over the bundle's index files. Whether it
+binds is `Policy.fieldTypes`. -/
+def Bundle.indexTypesHold (b : Bundle) : Bool :=
+  b.indexes.all fun e => e.2.frontmatter.keyHolds "okf_version" Value.isVersion
+
+/-- The `Prop` reading of `Bundle.indexTypesHold`. -/
+def Bundle.IndexTypesHold (b : Bundle) : Prop :=
+  ∀ e ∈ b.indexes, e.2.frontmatter.keyHolds "okf_version" Value.isVersion = true
+
+theorem Bundle.indexTypesHold_iff (b : Bundle) :
+    b.indexTypesHold = true ↔ b.IndexTypesHold := by
+  simp [Bundle.indexTypesHold, Bundle.IndexTypesHold]
 
 /-- The strict reading of §8 for one index file at `p`. -/
 def Document.indexFrontmatterClean (p : Path) (d : Document) : Bool :=

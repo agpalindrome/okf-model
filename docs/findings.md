@@ -297,6 +297,12 @@ said it lacked, and moves the gap: whether "contain no frontmatter" is part of
 §8's structure, or only the body's sections and bullets are. The field and its
 two readings are unchanged.
 
+**Revised at §12 (2026-10-26).** §12 calls the root block "the only place
+frontmatter is permitted in an `index.md`". "Permitted" is a word about rules
+where §8's sentence was indicative, so the strict reading gains a second text.
+It is still not RFC 2119, and it says where a block may sit rather than which
+keys it may hold, so the field stays.
+
 **The question for upstream.** Is frontmatter on an `index.md`, other than
 `okf_version` at the root, a conformance failure?
 
@@ -473,6 +479,11 @@ and `everyBlock`, and clause two takes it as a parameter. Under `everyBlock` a
 reserved file with an empty frontmatter passes, since the model cannot tell an
 absent block from an empty one and §11.1 is parse-side. §11.2's "non-empty" is
 read for any node kind, with the kind left to `fieldTypes`.
+
+**Revised at §12 (2026-10-26).** §12 sanctions the root block a second time,
+as where a bundle MAY declare `okf_version`, and calls it the only place
+frontmatter is permitted in an `index.md`. That weighs toward the scoped
+reading of §11.2 and does not state it; the field stays.
 
 **The question for upstream.** Does §11.2 reach a root `index.md` carrying
 `okf_version`, or is it scoped to the non-reserved files of §11.1?
