@@ -10,6 +10,8 @@ import Okf.V0_2.Computation
 import Okf.V0_2.Footnotes
 import Okf.V0_2.Policy
 import Okf.V0_2.Conformance
+import Okf.V0_2.Changes
+import Okf.V0_2.AppendixA
 
 /-!
 # OKF v0.2
